@@ -1,0 +1,21 @@
+<div class="gallery-view row">
+	<div class="gallery-preview col-xs-12">
+		<div ng-repeat="img in galleryQueen" class="gallery-img-preview col-xs-6 col-md-2" ng-click="showImg($event)">
+			<img src="{{ img.path }}">
+			<div class="gallery-img-preview-mask">
+				<div class="gallery-img-preview-infobar">
+					<span class="glyphicon glyphicon-heart col-xs-4"></span>
+					<span class="glyphicon glyphicon-comment col-xs-4"><span>12</span></span>
+				</div>
+			</div>
+		</div>
+		<div class="gallery-preview-overlay" ng-show="imgSelected" ng-click="closeLight()"></div>
+		<div id="lightimage" class="lightimage" ng-show="imgSelected" ng-class="{show: imgSelected}">
+			<img src="{{ lightImgSrc }}">
+		</div>
+	</div>
+	<div class="gallery-bottom-bar">
+    <button class="btn btn-info" ng-click="loadMoreImgs()">load more</button>
+    <button class="btn btn-info">search</button>
+  </div>
+</div>	

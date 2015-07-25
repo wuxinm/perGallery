@@ -1,0 +1,44 @@
+<div class="upload-view row">
+  <div class="upload-preview col-xs-12">
+		<div ng-repeat="img in uploadQueen" class="upload-img-preview col-xs-2" ng-class="{editing : editing}" ng-click="selectUploadQueen(this)">
+  		<img ngf-thumbnail="img" ngf-accept="'image/*'"/>
+  		<div class="upload-img-preview-mask" ng-class="{selected : img.selected}">
+  			<span class="glyphicon glyphicon-ok-circle"></span>
+  		</div>
+		</div>
+  </div>
+  <div class="upload-bottom-bar">
+    <span class="glyphicon glyphicon-plus" ng-hide="editing" type="file" ngf-select ng-model="imgFiles" ngf-multiple="true" ngf-capture="'camera'" accept="image/*"></span>
+    <span class="glyphicon glyphicon-th-list" ng-click="editUploadQueen()"></span>
+    <span class="glyphicon glyphicon-trash" ng-click="removeSelectedImg()" ng-show="editing"></span>
+    <span class="glyphicon glyphicon-ok" ng-click="finishUploadQueen()" ng-show="editing"></span>
+    <span class="glyphicon glyphicon-arrow-up" ng-click="uploadImages()" ng-hide="editing" ng-model="files"  data-toggle="modal" data-target="#progressModal"></span>
+  </div>
+  <div class="modal fade" id="progressModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Uploading</h4>
+        </div>
+        <div class="modal-body">
+          <div>
+            <div class="none-photos-alert" ng-hide="uploading">
+              <h4>{{ nonePhotoAlert }}</h4>
+            </div>
+            <div class="progress-circle" ng-show="uploading">
+              <div class="progress-left"><div class="left"></div></div>
+              <div class="progress-right"><div class="right"></div></div>
+              <div class="progress-mask"><span>{{ progress_percentage }}<span>%</div>
+            </div>       
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal"><a href="#/upload" ng-click="uploadDone()" style="
+  text-decoration:none">Upload More</a></button>
+          <button type="button" class="btn btn-primary"><a href="#/home" style="
+  text-decoration:none; color: #fff">Home</a></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

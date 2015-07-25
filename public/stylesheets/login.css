@@ -1,0 +1,23 @@
+@import url(http://fonts.googleapis.com/css?family=Raleway:400,600,700);
+
+body {
+	background-color: #b8ffdb !important;
+}
+
+.logintab {
+	font-family: 'Raleway', sans-serif;
+	margin-top: 100px;
+}
+
+.logintabheader {
+	padding-top: 10px;
+	text-align: center;
+}
+
+.logintabbody {
+	margin-top: 20px;
+}
+
+.logintabbody img {
+	padding: 20px 0 20px 0;
+}

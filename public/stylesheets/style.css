@@ -1,0 +1,265 @@
+body {
+  margin-top: 50px !important;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  height: 100%;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.container-fluid {
+	/*padding: 0px !important;*/
+}
+
+/************************ Home page ************************/
+
+.mainImage img{
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
+	box-shadow: 10px 0px 15px #000000;
+}
+
+.mainImage img:nth-child(2) {
+	left: -50px;
+}
+
+.mainImage img:nth-child(3) {
+	left: -100px;
+}
+
+.userProfile {
+	color: #ffffff;
+	position: fixed;
+	text-align: center;
+	top: 50px;
+	width: 300px;
+	height: 100%;
+	padding: 50px 10px 50px 10px;
+	background: #333;
+	opacity: 0.88;
+}
+
+.userProfile h5 {
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.profileCollection {
+	margin-top: 40px;
+}
+
+.collectionItem {
+	float: left;
+	width: 93px;
+}
+
+.collectionItem .glyphicon {
+	font-size: 35px;
+}
+
+.collectionPoints {
+	font-size: 20px;
+	margin-top: 20px;
+}
+
+/*********************** UPLOAD VIEW **********************/
+.upload-preview {
+	padding: 0px !important;
+}
+
+.upload-preview img{
+	width: 100%;
+}
+
+.upload-img-preview {
+	/*overflow: hidden;*/
+	float: left;
+	padding: 0px !important;
+	border: 0px solid #33CCFF;
+}
+
+.upload-img-preview img {
+	position: relative;
+}
+
+.upload-img-preview-mask {
+	position: absolute;
+	top: 0;
+	left: 0;
+	padding-right: 3px;
+	font-size: 34px;
+	opacity: 0;
+	color: #ffffff;
+	background-color: #33CCFF;
+}
+
+.editing {
+	cursor: pointer;
+}
+
+.upload-bottom-bar {
+	text-align: center;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	height: 60px;
+	width: 100%;
+	padding-top: 8px;
+	background-color: #101010;
+}
+
+.upload-bottom-bar span {
+	font-size: 20px;
+	border: 2px solid #9d9d9d;
+	border-radius: 50%;
+	padding: 8px;
+	margin-left: 12px;
+	color: #9d9d9d;
+	cursor: pointer;
+}
+
+.modal-body {
+	height: 350px;
+}
+
+.progress-circle {
+	height: 300px;
+	width: 300px;
+	margin-left: 130px;
+	margin-top: 10px;
+	/*background: #000;*/
+	border: 5px solid #000;
+	position: absolute;
+	border-radius: 50%;
+}
+
+.progress-left, .progress-right{
+	height: 305px;
+	width: 305px;
+	position: absolute;
+	top: -7px;
+	left: -7px;
+}
+
+.left, .right {
+	width: 305px;
+	height: 305px;
+	border-radius: 50%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	/*background: #ddd;*/
+	border: 10px solid #fff;
+}
+
+/*.right {
+	transform: rotate(180deg);
+}
+.left {
+	transform: rotate(180deg);
+}*/
+
+.progress-right, .right {
+	clip: rect(0, auto, auto, 152.5px);
+}
+
+.progress-left, .left {
+	clip: rect(0, 150px, auto, 0);
+}
+
+.progress-mask {
+	height: 290px;
+	width: 290px;
+	border-radius: 50%;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	line-height: 270px;
+	font-size: 30px;
+	text-align: center;
+	background: #fff;
+}
+
+/*********************** GALLERY VIEW **********************/
+.gallery-preview {
+	padding: 0px !important;
+	margin-bottom: 60px;
+}
+
+.gallery-img-preview {
+	padding: 0px !important;
+	float: left !important;
+}
+
+.gallery-img-preview img {
+	width: 100%;
+}
+
+.gallery-img-preview img:hover {
+	cursor: pointer;
+}
+
+.gallery-img-preview-mask {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	width: 100%;
+	height: 25%;
+	color: #ffffff;
+	background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1));
+}
+
+.gallery-img-preview-infobar {
+	position: absolute;
+	bottom: 0;
+	height: 29px;
+}
+
+.gallery-img-preview-mask span{
+	font-size: 20px;
+}
+
+.gallery-preview-overlay {
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+	z-index: 999;
+	background-color: black;
+	opacity: 0.8;
+}
+
+.gallery-preview-overlay.ng-hide-add.ng-hide-add-active,
+.gallery-preview-overlay.ng-hide-remove.ng-hide-remove-active {
+  -webkit-transition: all linear 0.5s;
+  transition: all linear 0.5s;
+}
+
+.gallery-preview-overlay.ng-hide{
+	opacity: 0;
+}
+
+.lightimage {
+	position: fixed;
+	z-index: 1000;
+	/*background-color: red;*/
+}
+
+.lightimage img{
+	width: 100%;
+}
+
+.gallery-bottom-bar {
+	text-align: center;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	height: 60px;
+	width: 100%;
+	padding-top: 12px;
+	background-color: #101010;
+}

@@ -1,0 +1,43 @@
+doctype html
+html(lang="en" ng-app="perGallery")
+	head
+		title perGallery
+		
+		meta(name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1')
+
+		link(rel='stylesheet', href='stylesheets/style.css')
+		link(rel='stylesheet', href='stylesheets/bootstrapCSS/bootstrap.css')
+
+		script.
+			var LoggedIn = JSON.parse('!{ JSON.stringify(user).replace(/\n/g, "\\n")}')
+					LoggedIn.userPhoto = LoggedIn.userPhoto.replace("_normal", "_400x400")
+
+		script(src='javascripts/jquery-1.11.1.min.js')
+		script(src='javascripts/bootstrap.min.js')
+		script(src='javascripts/angular.js')
+		script(src='javascripts/angular-route.js')
+		script(src='javascripts/angular-resource.js')
+		script(src='javascripts/angular-animate.js')
+		script(src='javascripts/ng-file-upload.js')
+		script(src='javascripts/app.js')
+		script(src='javascripts/controller.js')
+		script(src='javascripts/service.js')
+		script(src='javascripts/animation.js')
+
+	body
+		nav.navbar.navbar-inverse.navbar-fixed-top(role='navigation')
+			.navbar-header
+				button.navbar-toggle(type='button', data-toggle='collapse', data-target='#main-nav')
+					span.sr-only Toggle navigation
+					span.icon-bar
+					span.icon-bar
+					span.icon-bar
+				a.navbar-brand.active(href='#/home') perGallery
+
+			.collapse.navbar-collapse#main-nav
+				ul.nav.navbar-nav(role='navigation')
+					li.active: a.scroll-link(href='#/', id='home') Home
+					li: a.scroll-link(href='#/upload', data-id='') UpLoad
+					li: a.scroll-link(href='#/gallery', data-id='') MyGallery
+		div.container-view.container-fluid
+			div.view-slide-in(ng-view)
