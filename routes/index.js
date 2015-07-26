@@ -12,7 +12,6 @@ router.get('/auth/twitter/callback', passport.authenticate('twitter', {
 /* GET home page. */
 router.get('/', function (req, res) {
 	if (!req.user)
-		// res.render('login');
 		res.redirect('/login');
 	else
 		res.redirect('/' + req.user.username);
@@ -35,7 +34,6 @@ router.get('/:username', function (req, res) {
 });
 
 router.get('/:username/home', photo.getAllPhotos);
-// router.get('/:username/upload', photo.getUpload);
 router.post('/:username/upload', photo.uploadPhotos);
 router.get('/:username/gallery', photo.galleryPhotos);
 
