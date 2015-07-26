@@ -1,2 +1,2 @@
 # perGallery
-PhotoGallery WebApp based on MEAN.js
+PhotoGallery WebApp based on MEAN framework
