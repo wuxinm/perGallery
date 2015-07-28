@@ -1,5 +1,8 @@
 <div class="home-view row">
-	<div class="mainImage">
+	<div class="empty-gallery-alert" ng-show="emptyGalleryAlert">
+		<h3>Please add your first image~~!!</h3>
+	</div>
+	<div class="mainImage" ng-hide="emptyGalleryAlert">
  		<img class="home-slider" src="{{ img.path }}" ng-repeat="img in mainImages" ng-class="{sliderhide: mainImageTopOne === img.path, sliderleft50: sliderLeft50 === img.path, sliderleft100: sliderLeft100 === img.path}">
 	</div>
 	<div class="userProfile">

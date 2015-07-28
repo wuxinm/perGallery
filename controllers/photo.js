@@ -18,24 +18,15 @@ exports.getAllPhotos = function (req, res) {
 exports.uploadPhotos = function (req, res) {
 	var imgfiles = req.files.file;
 	if (imgfiles instanceof Array) {
-		uploadImages(imgfiles, req, res);
-	}
-	else {
-		uploadAnImage(imgfiles, req, res);
+		imgfiles.forEach(function(img) {
+			imageResize(img, req, res);
+			addImgToDB(img, req, res);
+		})
+	} else {
+		imageResize(imgfiles, req, res);
+		addImgToDB(imgfiles, req, res);
 	}
 	res.send('Finish, click right corner go back');
-}
-
-function uploadImages (imgs, req, res) {
-	imgs.forEach(function(img) {
-		imageResize(img, req, res);
-		addImgToDB(img, req, res);
-	})
-}
-
-function uploadAnImage (img, req, res) {
-	imageResize(img, req, res);
-	addImgToDB(img, req, res);
 }
 
 function imageResize (img, req, res) {

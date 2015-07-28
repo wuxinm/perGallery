@@ -1,7 +1,7 @@
 <div class="gallery-view row">
 	<div class="gallery-preview col-xs-12">
-		<div ng-repeat="img in galleryQueen" class="gallery-img-preview col-xs-6 col-md-2" ng-click="showImg($event)">
-			<img src="{{ img.path }}">
+		<div ng-repeat="img in galleryQueue" class="gallery-img-preview col-xs-6 col-md-2" ng-click="showImg(this, $event)">
+			<img src="{{ img.thumbpath }}">
 			<div class="gallery-img-preview-mask">
 				<div class="gallery-img-preview-infobar">
 					<span class="glyphicon glyphicon-heart col-xs-4"></span>

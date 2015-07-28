@@ -1,3 +1,5 @@
+/// <reference path="../../typings/angularjs/angular.d.ts"/>
+/* global LoggedIn */
 'use strict'
 
 var galleryControllers = angular.module('galleryControllers', []);
@@ -10,10 +12,11 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', 'M
 		$scope.userLocation = LoggedIn.location;
 		$scope.userDescription = LoggedIn.description;
 
+		$scope.emptyGalleryAlert;
 		$scope.mainImages = [];
-		$scope.mainImageTopOne = 'null';
-		$scope.sliderLeft50 = 'null';
-		$scope.sliderLeft100 = 'null';
+		$scope.mainImageTopOne;
+		$scope.sliderLeft50;
+		$scope.sliderLeft100;
 
 		// list to store all photos from DB
 		var imageList = [];
@@ -24,10 +27,17 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', 'M
 		MainImageService.query({
 			username: LoggedIn.username
 		}, function (data) {
-			imageList = data;
-			for (var i = 0; i < 3; i++) {
-				$scope.mainImages[i] = pickRandomImage(imageList);
-			};
+			// if (data.length === 0) {
+			// 	$scope.emptyGalleryAlert = true;
+			// } else {
+			if (data.length !== 0) {
+				$scope.emptyGalleryAlert = false;
+				imageList = data;
+				for (var i = 0; i < 3; i++) {
+					$scope.mainImages[i] = pickRandomImage(imageList);
+				};
+			}
+			// }
 		});
 
 		function pickRandomImage(photos) {
@@ -60,8 +70,11 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', 'M
 			$scope.sliderLeft100 = 'null';
 			$scope.mainImages.unshift(pickRandomImage(imageList));
 		}
-
-		$interval(mainImageAnimate, 5000);
+		
+		if (!$scope.emptyGalleryAlert) {
+			console.log('start~~~~~~~');
+			$interval(mainImageAnimate, 5000);
+		}
 	}
 ]);
 
@@ -193,6 +206,7 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$window', '$animate', '
 				username: LoggedIn.username,
 				id: skip
 			}, function (data) {
+				console.log(data);
 				for (var i = 0; i < data.length; i++) {
 					$scope.galleryQueue.push(data[i]);
 				};
@@ -200,9 +214,7 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$window', '$animate', '
 			});
 		}
 
-		$scope.showImg = function ($event) {
-			console.log($event);
-
+		$scope.showImg = function (image, $event) {
 			Lightbox.lightboxWidth = $window.innerWidth * 0.6;
 			Lightbox.lightboxHeight = Lightbox.lightboxWidth/1.6;
 			Lightbox.lightboxX = $window.innerWidth * 0.2;
@@ -216,7 +228,7 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$window', '$animate', '
 			angular.element('#lightimage').css('width', Lightbox.originalImgWidth);
 			angular.element('#lightimage').css('height', Lightbox.originalImgHeight);
 			$scope.imgSelected = true;
-			$scope.lightImgSrc = $event.target.src;
+			$scope.lightImgSrc = image.img.path;
 		}
 
 		$scope.closeLight = function () {
