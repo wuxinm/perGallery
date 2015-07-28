@@ -41,7 +41,7 @@ module.exports = function(app, config, passport) {
         },
         onFileUploadData: function (file, data) {
             uploading.setUploadingSize(file.size);
-            console.log('@@ ' + uploading.uploadingSize);
+            // console.log('@@ ' + uploading.uploadingSize);
         },
         onFileUploadComplete: function (file) {
             console.log(file.originalname + ' uploaded to  ' + file.path)

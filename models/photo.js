@@ -22,6 +22,7 @@ var PhotoSchema = new Schema({
 	username: { type: String, default: '' },
 	originalname: { type: String, default: '' },
 	path: { type: String, default: '' },
+	thumbpath: { type: String, default: ''},
 	comments: { type: String },
 	tags: { type: [], get: getTags, set: setTags },
 	uploadAt: { type: Date, default: Date.now }

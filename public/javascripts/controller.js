@@ -70,8 +70,8 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', 'M
 galleryControllers.controller('UploadCtrl', ['$scope', '$timeout', 'Upload',
 	function ($scope, $timeout, Upload) {
 		// $scope.percentComplete = 0;
-		$scope.uploadQueen = [];
-		$scope.removeUploadQueen = [];
+		$scope.uploadQueue = [];
+		$scope.removeUploadQueue = [];
 		$scope.progress_percentage = 0;
 		$scope.rotate_engle = 0;
 		$scope.editing = false;
@@ -91,45 +91,45 @@ galleryControllers.controller('UploadCtrl', ['$scope', '$timeout', 'Upload',
 			for (var i = 0; i < imgFiles.length; i++) {
 				var image = imgFiles[i]
 				image.selected = false;
-				$scope.uploadQueen.push(image);
+				$scope.uploadQueue.push(image);
 			};
-			console.log($scope.uploadQueen.length);
+			console.log($scope.uploadQueue.length);
 		}
 
-		$scope.editUploadQueen = function () {
+		$scope.editUploadQueue = function () {
 			$scope.editing = true;
 		}
 
-		$scope.selectUploadQueen = function (file) {
+		$scope.selectUploadQueue = function (file) {
 			if($scope.editing) {
 				if(!file.img.selected) {
 					file.img.selected = true;
-					$scope.removeUploadQueen.push(file.img);
+					$scope.removeUploadQueue.push(file.img);
 				}
 				else {
 					file.img.selected = false;
-					var index = $scope.removeUploadQueen.indexOf(file.img);
-					$scope.removeUploadQueen.splice(index, 1);
+					var index = $scope.removeUploadQueue.indexOf(file.img);
+					$scope.removeUploadQueue.splice(index, 1);
 				}
 			}
 		}
 
 		$scope.removeSelectedImg = function () {
-			for (var i = 0; i < $scope.removeUploadQueen.length; i++) {
-				var index = $scope.uploadQueen.indexOf($scope.removeUploadQueen[i]);
-				$scope.uploadQueen.splice(index, 1);
+			for (var i = 0; i < $scope.removeUploadQueue.length; i++) {
+				var index = $scope.uploadQueue.indexOf($scope.removeUploadQueue[i]);
+				$scope.uploadQueue.splice(index, 1);
 			}
-			$scope.removeUploadQueen.splice(0, $scope.removeUploadQueen.length);
+			$scope.removeUploadQueue.splice(0, $scope.removeUploadQueue.length);
 		}
 
-		$scope.finishUploadQueen = function () {
+		$scope.finishUploadQueue = function () {
 			$scope.editing = false;
 			// removeSelectedImg();
-			if($scope.removeUploadQueen !== null) {
-				$scope.removeUploadQueen.forEach(function(img) {
+			if($scope.removeUploadQueue !== null) {
+				$scope.removeUploadQueue.forEach(function(img) {
 					img.selected = false;
 				});
-				$scope.removeUploadQueen.splice(0, $scope.removeUploadQueen.length);
+				$scope.removeUploadQueue.splice(0, $scope.removeUploadQueue.length);
 			}
 		}
 
@@ -138,23 +138,23 @@ galleryControllers.controller('UploadCtrl', ['$scope', '$timeout', 'Upload',
 				$scope.nonePhotoAlert = 'Please add photos first~~!';
 			}
 			else {
-				$scope.uploadQueen.upload = Upload.upload({
+				$scope.uploadQueue.upload = Upload.upload({
 					url: '/' + LoggedIn.username + '/upload',
 					fields: {
 						'username': $scope.userName
 					},
-					file: $scope.uploadQueen
+					file: $scope.uploadQueue
 				});
 
-				$scope.uploadQueen.upload.progress(function (evt) {
+				$scope.uploadQueue.upload.progress(function (evt) {
 					// Math.min is to fix IE which reports 200% sometimes
 					$scope.progress_percentage = Math.min(100, parseInt(100.0 * evt.loaded / evt.total));
 					$scope.rotate_engle = $scope.progress_percentage * 3.6;
 					updateProgress($scope.rotate_engle);
 				});
 
-				$scope.uploadQueen.upload.success(function(data, status, headers, config) {
-					$scope.uploadQueen.splice(0, $scope.uploadQueen.length);
+				$scope.uploadQueue.upload.success(function(data, status, headers, config) {
+					$scope.uploadQueue.splice(0, $scope.uploadQueue.length);
 					// $scope.uploading = false;
 					console.log(data);
 				});	
@@ -180,14 +180,9 @@ galleryControllers.controller('UploadCtrl', ['$scope', '$timeout', 'Upload',
 
 // ---------------------- GALLERY PAGE CONTROLLER ---------------------------------
 
-// var lightimageWidth = $(window).width() * 0.6;
-// var lightimageHeight = $(window).height() * 0.5;
-// var lightimageTop = 100;
-// var lightimageLeft = 150;
-
 galleryControllers.controller('GalleryCtrl', ['$scope', '$window', '$animate', 'GalleryService', 'Lightbox', 
 	function ($scope, $window, $animate, GalleryService, Lightbox) {
-		$scope.galleryQueen = [];
+		$scope.galleryQueue = [];
 		$scope.imgSelected = false;
 		$scope.lightImgSrc = "";
 
@@ -199,7 +194,7 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$window', '$animate', '
 				id: skip
 			}, function (data) {
 				for (var i = 0; i < data.length; i++) {
-					$scope.galleryQueen.push(data[i]);
+					$scope.galleryQueue.push(data[i]);
 				};
 				skip += 5;
 			});

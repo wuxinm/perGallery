@@ -1,6 +1,6 @@
 <div class="upload-view row">
   <div class="upload-preview col-xs-12">
-		<div ng-repeat="img in uploadQueen" class="upload-img-preview col-xs-2" ng-class="{editing : editing}" ng-click="selectUploadQueen(this)">
+		<div ng-repeat="img in uploadQueue" class="upload-img-preview col-xs-2" ng-class="{editing : editing}" ng-click="selectUploadQueue(this)">
   		<img ngf-thumbnail="img" ngf-accept="'image/*'"/>
   		<div class="upload-img-preview-mask" ng-class="{selected : img.selected}">
   			<span class="glyphicon glyphicon-ok-circle"></span>
@@ -9,9 +9,9 @@
   </div>
   <div class="upload-bottom-bar">
     <span class="glyphicon glyphicon-plus" ng-hide="editing" type="file" ngf-select ng-model="imgFiles" ngf-multiple="true" ngf-capture="'camera'" accept="image/*"></span>
-    <span class="glyphicon glyphicon-th-list" ng-click="editUploadQueen()"></span>
+    <span class="glyphicon glyphicon-th-list" ng-click="editUploadQueue()"></span>
     <span class="glyphicon glyphicon-trash" ng-click="removeSelectedImg()" ng-show="editing"></span>
-    <span class="glyphicon glyphicon-ok" ng-click="finishUploadQueen()" ng-show="editing"></span>
+    <span class="glyphicon glyphicon-ok" ng-click="finishUploadQueue()" ng-show="editing"></span>
     <span class="glyphicon glyphicon-arrow-up" ng-click="uploadImages()" ng-hide="editing" ng-model="files"  data-toggle="modal" data-target="#progressModal"></span>
   </div>
   <div class="modal fade" id="progressModal">
