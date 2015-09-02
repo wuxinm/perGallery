@@ -2,18 +2,43 @@ var galleryService = angular.module('galleryService', []);
 
 galleryService.factory('MainImageService', ['$resource',
 	function ($resource) {
-		return $resource('/:username/home');
-		// 	, {}, {
-		// 	'query': {method: 'GET', isArray: true}
-		// });
+		return $resource('/:username/home', {}, {});
 	}
+]);
+
+galleryService.factory('SearchUserService', ['$resource',
+	function ($resource) {
+		return $resource('/:username/home/friends/search', {}, {});
+	}
+]);
+
+galleryService.factory('AddFriendService', ['$resource',
+	function ($resource) {
+		return $resource('/:username/home/friends/addFriend', { username: '@name'}, 
+		{
+			'update': { method: 'PUT' }
+		});
+	}	
 ]);
 
 galleryService.factory('GalleryService', ['$resource', 
 	function ($resource) {
-		return $resource('/:username/gallery', {}, {
+		return $resource('/:username/gallery', {}, {});
+	}
+]);
 
-		});
+galleryService.factory('FavouritePhotoService', ['$resource',
+	function ($resource) {
+		return $resource('/:username/gallery/addToFavourite', { username: '@name'}, 
+			{
+				'update': { method: 'PUT' }
+			});
+	}	
+]);
+
+galleryService.factory('ShowFavouriteService', ['$resource',
+	function ($resource) {
+		return $resource('/:username/gallery/showFavourites', {}, {});
 	}
 ]);
 

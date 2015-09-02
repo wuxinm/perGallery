@@ -1,5 +1,7 @@
 var passport = require('passport');
 var TwitterStrategy = require('passport-twitter');
+var mongoose = require('mongoose');
+var User = mongoose.model("User"); 
 
 module.exports = function(config, passport) {
 	passport.serializeUser(function(user, done) {
@@ -16,7 +18,25 @@ module.exports = function(config, passport) {
 			callbackURL: config.twitter.callbackURL
 		},
 		function(token, tokenSecret, profile, done) {
-			return done(null, profile);
+			User.checkUser(profile.username, function(err, user){
+				if (err) {
+					return done(err);
+				}
+				else {
+					if (user === null) {
+						console.log('create a new user~~~~~~~~~~~~~~~~~~~~~');
+						User.createUser(profile, function(err, user) {
+							if (err) {
+								return done(err);	
+							}
+						});
+						return done(null, profile);
+					} else {
+						console.log('-------------------this user already exsit');
+						return done(null, profile);
+					}
+				}
+			});
 		}
 	));
 

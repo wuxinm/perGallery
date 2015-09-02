@@ -15,7 +15,7 @@ galleryApp.config(['$routeProvider',
 	function ($routeProvider) {
 		$routeProvider.
 		when('/home', {
-			templateUrl: 'partials/slider.html',
+			templateUrl: 'partials/home.html',
 			controller: 'HomeCtrl'
 		}).
 		when('/upload', {

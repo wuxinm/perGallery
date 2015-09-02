@@ -10,7 +10,7 @@ html(lang="en" ng-app="perGallery")
 
 		script.
 			var LoggedIn = JSON.parse('!{ JSON.stringify(user).replace(/\n/g, "\\n")}')
-					LoggedIn.userPhoto = LoggedIn.userPhoto.replace("_normal", "_400x400")
+				LoggedIn.userPhoto = LoggedIn.profilePhotoUrl.replace("_normal", "_400x400")
 
 		script(src='javascripts/jquery-1.11.1.min.js')
 		script(src='javascripts/bootstrap.min.js')
@@ -19,6 +19,7 @@ html(lang="en" ng-app="perGallery")
 		script(src='javascripts/angular-resource.js')
 		script(src='javascripts/angular-animate.js')
 		script(src='javascripts/ng-file-upload.js')
+		// script(src='javascripts/angucomplete-alt.js')
 		script(src='javascripts/app.js')
 		script(src='javascripts/controller.js')
 		script(src='javascripts/service.js')
@@ -36,8 +37,9 @@ html(lang="en" ng-app="perGallery")
 
 			.collapse.navbar-collapse#main-nav
 				ul.nav.navbar-nav(role='navigation')
-					li.active: a.scroll-link(href='#/', id='home') Home
+					li: a.scroll-link(href='#/', id='home') Home
 					li: a.scroll-link(href='#/upload', data-id='') UpLoad
 					li: a.scroll-link(href='#/gallery', data-id='') MyGallery
+					li: a.scroll-link(href='/logout') Logout
 		div.container-view.container-fluid
 			div.view-slide-in(ng-view)

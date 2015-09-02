@@ -22,19 +22,45 @@ var PhotoSchema = new Schema({
 	username: { type: String, default: '' },
 	originalname: { type: String, default: '' },
 	path: { type: String, default: '' },
-	thumbpath: { type: String, default: ''},
-	comments: { type: String },
+	thumbpath: {
+		lowThumb: { type: String, default: ''},
+		mediumThumb: { type: String, default: ''}
+	},
+	favourite: { type: Boolean, default: false },
+	comments: { type: Array, default: [] },
 	tags: { type: [], get: getTags, set: setTags },
 	uploadAt: { type: Date, default: Date.now }
 });
 
+// create new photo
+PhotoSchema.statics.createPhoto = function (img, user, callback){
+	var newPhoto = new this();
+	newPhoto.name = img.name;
+	newPhoto.username = user.username;
+	newPhoto.originalname = img.originalname;
+	newPhoto.path = img.path.substring(7, img.path.length);
+	newPhoto.thumbpath.lowThumb = img.path.substring(7, 14) + '/lowThumbnails/' + img.name;
+	newPhoto.thumbpath.mediumThumb = img.path.substring(7, 14) + '/mediumThumbnails/' + img.name;
+	newPhoto.uploadAt = Date.now();
+	newPhoto.save();
+	return newPhoto;
+};
 
-// pick a random document from photos collection
-PhotoSchema.statics.randomPhoto = function (req, res, callback) {
+// pick random 3 photos to initialize slider
+PhotoSchema.statics.createSlider = function (username, callback) {
 	this.count(function (err, count) {
 		if (err) return callback(err);
 		var rand = Math.floor(Math.random() * count);
-		this.findOne({ username : req.user.username }).skip(rand).exec(callback);
+		this.find({ username : username }).limit(3).skip(rand).exec(callback);
+	}.bind(this));
+};
+
+// pick a random document from photos collection
+PhotoSchema.statics.randomPhoto = function (username, callback) {
+	this.count(function (err, count) {
+		if (err) return callback(err);
+		var rand = Math.floor(Math.random() * count);
+		this.findOne({ username : username }).skip(rand).exec(callback);
 	}.bind(this));
 };
 
@@ -45,10 +71,19 @@ PhotoSchema.statics.getPhotos = function (callback) {
 
 // select some photos from photos collection
 PhotoSchema.statics.dynamicPhotos = function (id, callback) {
-	this.find().limit(5).skip(id).exec(callback);
+	this.find().limit(30).skip(id).exec(callback);
 }
 
+PhotoSchema.statics.addToFavourite = function (photoName, callback) {
+	this.update({ name: photoName }, { $set: { favourite: true } }, callback);
+}
 
+PhotoSchema.statics.showFavourites = function (username, callback) {
+	this.find({ username: username, favourite: true }, callback);
+}
 
+PhotoSchema.statics.removePhoto = function (photoName, callback) {
+	this.remove({ name: photoName }, callback);
+}
 
 mongoose.model('Photo', PhotoSchema);

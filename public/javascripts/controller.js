@@ -4,15 +4,23 @@
 
 var galleryControllers = angular.module('galleryControllers', []);
 
-galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', 'MainImageService',
-	function ($scope, $timeout, $interval, MainImageService) {
+galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$window','MainImageService', 'SearchUserService', 'AddFriendService',
+	function ($scope, $timeout, $interval, $window, MainImageService, SearchUserService, AddFriendService) {
 		//Profile Label
 		$scope.userProfilePhoto = LoggedIn.userPhoto;
-		$scope.userName = LoggedIn.username;
+		$scope.userName = LoggedIn.name;
 		$scope.userLocation = LoggedIn.location;
 		$scope.userDescription = LoggedIn.description;
+		$scope.userFriendList = LoggedIn.friends;
 
-		$scope.emptyGalleryAlert;
+		$scope.emptyGalleryAlert = true;
+		// enable slider mode by 1, disable by 0
+		$scope.sliderMode = 0;
+		// home page mode: 
+		// 	0 default homepage;
+		// 	1 friend list
+		// 	2 message list
+		$scope.homepageMode = 0;
 		$scope.mainImages = [];
 		$scope.mainImageTopOne;
 		$scope.sliderLeft50;
@@ -20,46 +28,49 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', 'M
 
 		// list to store all photos from DB
 		var imageList = [];
-		// randomSlider
 		var randomIndex;
 		var randomPhoto;
-
+		
+		// dynamic serach users from DB
+		var searchTimer = null;
+		var minSearchLength = 2;
+		$scope.searching = false;
+		$scope.results = [];
+		
 		MainImageService.query({
-			username: LoggedIn.username
+			username: LoggedIn.name
 		}, function (data) {
-			// if (data.length === 0) {
-			// 	$scope.emptyGalleryAlert = true;
-			// } else {
 			if (data.length !== 0) {
+				// console.log(data);
 				$scope.emptyGalleryAlert = false;
 				imageList = data;
 				for (var i = 0; i < 3; i++) {
-					$scope.mainImages[i] = pickRandomImage(imageList);
+					$scope.mainImages.push(pickRandomImage(imageList));
 				};
+			$interval(mainImageAnimate, 5000);
 			}
-			// }
 		});
 
-		function pickRandomImage(photos) {
-			randomIndex = Math.floor(Math.random() * photos.length);
-			randomPhoto = photos[randomIndex];
+		function pickRandomImage(imageList) {
+			randomIndex = Math.floor(Math.random() * imageList.length);
+			randomPhoto = imageList[randomIndex];
 
 			//make sure no duplicate photo be picked in list
-			photos.splice(randomIndex, 1);
+			imageList.splice(randomIndex, 1);
 			return randomPhoto;
 		}
 
 		//Slider Animation
 
 		function mainImageAnimate() {
-			$scope.mainImageTopOne = $scope.mainImages[2].path;
+			$scope.mainImageTopOne = $scope.mainImages[2]._id;
 			$timeout(removeTopOneImage, 1000);
 		}
 
 		function removeTopOneImage(index) {
 			$scope.mainImageTopOne = 'null';
-			$scope.sliderLeft50 = $scope.mainImages[0].path;
-			$scope.sliderLeft100 = $scope.mainImages[1].path;
+			$scope.sliderLeft50 = $scope.mainImages[0]._id;
+			$scope.sliderLeft100 = $scope.mainImages[1]._id;
 			imageList.push($scope.mainImages[2]);
 			$scope.mainImages.pop();
 			$timeout(pushNewIamge, 100);
@@ -71,10 +82,62 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', 'M
 			$scope.mainImages.unshift(pickRandomImage(imageList));
 		}
 		
-		if (!$scope.emptyGalleryAlert) {
-			console.log('start~~~~~~~');
-			$interval(mainImageAnimate, 5000);
+		// Start Slider model
+		$scope.showSlider = function () {
+			$scope.sliderMode = 1;
 		}
+		
+		// show friends list
+		$scope.showFriends = function () {
+			$scope.homepageMode = -1;
+			$timeout(function(){
+				$scope.homepageMode = 1;
+				// console.log($scope.userFriendList)
+			}, 500);
+		}
+		
+		// search users
+		$scope.searchUser = function (value) {
+			clearSearchResults($scope.results);
+			// $scope.searching = true;
+			if (value.length > minSearchLength) {
+				if (searchTimer) {
+	              $timeout.cancel(searchTimer);
+	            }
+				
+				searchTimer = $timeout(function () {
+					usersGetRequest(value);
+				}, 300);
+			}
+		}
+		
+		function usersGetRequest(str) {
+			
+			SearchUserService.query({
+				username: LoggedIn.name,
+				char: str
+			}, function (data) {
+				for (var i = 0; i < data.length; i++) {
+					$scope.results.push(data[i])
+				}
+				// $scope.searching = false;
+			});
+		}
+		// add one friend to friend list
+		$scope.addToFriend = function (friend) {
+			AddFriendService.update({username: LoggedIn.name}, friend);
+			$scope.userFriendList.push(friend);
+		}
+		
+		$scope.clearInput = function () {
+			$scope.searchingStr = '';
+			clearSearchResults($scope.results);
+		}
+		
+		function clearSearchResults(results) {
+			results.splice(0, results.length);
+		}
+		
 	}
 ]);
 
@@ -152,7 +215,7 @@ galleryControllers.controller('UploadCtrl', ['$scope', '$timeout', 'Upload',
 			}
 			else {
 				$scope.uploadQueue.upload = Upload.upload({
-					url: '/' + LoggedIn.username + '/upload',
+					url: '/:username/upload',
 					fields: {
 						'username': $scope.userName
 					},
@@ -193,25 +256,38 @@ galleryControllers.controller('UploadCtrl', ['$scope', '$timeout', 'Upload',
 
 // ---------------------- GALLERY PAGE CONTROLLER ---------------------------------
 
-galleryControllers.controller('GalleryCtrl', ['$scope', '$window', '$animate', 'GalleryService', 'Lightbox', 
-	function ($scope, $window, $animate, GalleryService, Lightbox) {
+galleryControllers.controller('GalleryCtrl', ['$scope', '$window', '$animate', 'GalleryService', 'Lightbox', 'FavouritePhotoService',
+	'ShowFavouriteService',
+	function ($scope, $window, $animate, GalleryService, Lightbox, FavouritePhotoService
+		, ShowFavouriteService) {
 		$scope.galleryQueue = [];
 		$scope.imgSelected = false;
-		$scope.lightImgSrc = "";
+		$scope.lightImgSrc;
+		$scope.allphotos = true;
+		$scope.gallerySearching = false;
 
 		var skip = 0;
 
 		$scope.loadMoreImgs = function () {
 			GalleryService.query({
-				username: LoggedIn.username,
+				username: LoggedIn.name,
 				id: skip
 			}, function (data) {
-				console.log(data);
 				for (var i = 0; i < data.length; i++) {
 					$scope.galleryQueue.push(data[i]);
 				};
-				skip += 5;
+				skip += 30;
 			});
+		}
+		
+		$scope.loadMoreImgs();
+		
+		$scope.searchImgs = function () {
+			$scope.gallerySearching = true;
+		}
+		
+		$scope.stopSearch = function () {
+			$scope.gallerySearching = false;
 		}
 
 		$scope.showImg = function (image, $event) {
@@ -223,19 +299,48 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$window', '$animate', '
 			Lightbox.originalImgWidth = angular.element($event.target).prop('width');
 			Lightbox.originalImgHeight = angular.element($event.target).prop('height');
 
-			angular.element('#lightimage').css('top', Lightbox.originalImgY);
-			angular.element('#lightimage').css('left', Lightbox.originalImgX);
-			angular.element('#lightimage').css('width', Lightbox.originalImgWidth);
-			angular.element('#lightimage').css('height', Lightbox.originalImgHeight);
+			angular.element('#light-image').css('top', Lightbox.originalImgY);
+			angular.element('#light-image').css('left', Lightbox.originalImgX);
+			angular.element('#light-image').css('width', Lightbox.originalImgWidth);
+			angular.element('#light-image').css('height', Lightbox.originalImgHeight);
 			$scope.imgSelected = true;
-			$scope.lightImgSrc = image.img.path;
+			$scope.lightImg = image.img;
 		}
 
 		$scope.closeLight = function () {
 			$scope.imgSelected = false;
-		}	
-
-		$scope.loadMoreImgs();
-
+		}
+		
+		$scope.addToFavourite = function () {
+			FavouritePhotoService.update({username: LoggedIn.name}, $scope.lightImg);
+		}
+		
+		$scope.showAllImgs = function () {
+			$scope.allphotos = true;
+			$scope.galleryQueue.splice(0, $scope.galleryQueue.length);
+			skip = 0;
+			GalleryService.query({
+				username: LoggedIn.name,
+				id: skip
+			}, function (data) {
+				for (var i = 0; i < data.length; i++) {
+					$scope.galleryQueue.push(data[i]);
+				};
+				skip += 30;
+			});
+		}
+		
+		$scope.showFavourites = function () {
+			$scope.allphotos = false;
+			ShowFavouriteService.query({
+				username: LoggedIn.name
+			}, function (data) {
+				$scope.galleryQueue.splice(0, $scope.galleryQueue.length);
+				for (var i = 0; i < data.length; i++) {
+					$scope.galleryQueue.push(data[i]);
+				}
+			});
+		}
+		
 	}
 ]);

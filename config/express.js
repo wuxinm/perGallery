@@ -66,10 +66,11 @@ module.exports = function(app, config, passport) {
     if (app.get('env') === 'development') {
         app.use(function(err, req, res, next) {
             res.status(err.status || 500);
-            res.render('error', {
-                message: err.message,
-                error: err
-            });
+            console.log(err);
+            // res.render('error', {
+            //     message: err.message,
+            //     error: err
+            // });
         });
     }
 
@@ -77,9 +78,10 @@ module.exports = function(app, config, passport) {
     // no stacktraces leaked to user
     app.use(function(err, req, res, next) {
         res.status(err.status || 500);
-        res.render('error', {
-            message: err.message,
-            error: {}
-        });
+        console.log(err);
+        // res.render('error', {
+        //     message: err.message,
+        //     error: {}
+        // });
     });
 };

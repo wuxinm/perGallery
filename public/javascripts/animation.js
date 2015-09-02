@@ -25,7 +25,7 @@ galleryAnimations.animation('.home-slider', function () {
 			if (className === 'sliderhide') {
 				element.css('opacity', 0)
 
-				jQuery(element).animate({
+				element.animate({
 					opacity: 1
 				}, 1000, done);
 
@@ -91,7 +91,7 @@ galleryAnimations.animation('.upload-img-preview-mask', function() {
 	}
 });
 
-galleryAnimations.animation('.lightimage', ['Lightbox', function (Lightbox) {
+galleryAnimations.animation('.light-image', ['Lightbox', function (Lightbox) {
 	return {
 		addClass: function (element, className, done) {
 			if (className === 'show') {

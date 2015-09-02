@@ -4,11 +4,20 @@ var im = require('imagemagick');
 
 exports.getAllPhotos = function (req, res) {
 	if(req.params.username === req.user.username) {
-		// console.log(req.route);
 		Photo.getPhotos(function (err, photos) {
 			if (err) 
 				res.json(err)
+			// console.log(photos);
 			res.json(photos);
+		})
+	}
+}
+
+exports.getRandomPhoto = function (req, res) {
+	if(req.params.username === req.user.username) {
+		Photo.randomPhoto(req.user.username, function (err, photo) {
+			if (err) res.json(err);
+			res.json(photo);		
 		})
 	}
 }
@@ -31,19 +40,25 @@ exports.uploadPhotos = function (req, res) {
 
 function imageResize (img, req, res) {
 	var imageName = img.name;
-	
 	// if there is an error
 	if(!imageName) {
 		console.log('there was an error');
 		res.redirect('/');
 		res.end();
 	} else {
-		var thumbPath = 'public/uploads/thumbnails/' + imageName;
-		
+		var lowThumbPath = 'public/uploads/lowThumbnails/' + imageName;
+		var mediumThumbPath = 'public/uploads/mediumThumbnails/' + imageName;	
 		im.resize({
 			srcPath: img.path,
-			dstPath: thumbPath,
+			dstPath: lowThumbPath,
 			width: 512
+		}, function (err, stdout, stderr) {
+			if (err) throw err;
+		});
+		im.resize({
+			srcPath: img.path,
+			dstPath: mediumThumbPath,
+			width: 2048
 		}, function (err, stdout, stderr) {
 			if (err) throw err;
 		});
@@ -51,15 +66,10 @@ function imageResize (img, req, res) {
 }
 
 function addImgToDB (img, req, res) {
-	new Photo({
-		name: img.name,
-		username: req.user.username,
-		originalname: img.originalname,
-		path: img.path.substring(7, img.path.length),
-		thumbpath: img.path.substring(7, 14) + '/thumbnails/' + img.name,
-		uploadAt: Date.now()
-	}).save(function(err) {
-		if (err) res.json(err);
+	Photo.createPhoto(img, req.user, function(err, photo) {
+		if (err) {
+			res.json(err);
+		}
 	});
 }
 
@@ -67,12 +77,53 @@ function addImgToDB (img, req, res) {
 
 exports.galleryPhotos = function (req, res) {
 	if(req.params.username === req.user.username) {
-		var id = req.query.id
+		var id = req.query.id;
 		Photo.dynamicPhotos(id, function (err, photos) {
 			if(err)
-				res.json(err)
+				res.json(err);
 			res.json(photos);
 		})
 	}
 }
 
+/**
+ * add photo as favourite
+ */
+
+exports.addToFavouritePhoto = function (req, res) {
+	var photo = req.body;
+	Photo.addToFavourite(photo.name, function(err, photo) {
+		if (err) {
+			res.json(err);
+		}
+		res.send('add this photo as favourite');
+	});
+}
+
+/** 
+ * show favourite photos
+ */
+ 
+ exports.showFavouritePhotos = function (req, res) {
+	 var username = req.user.username;
+	 Photo.showFavourites(username, function (err, photos) {
+		 if (err) {
+			 res.json(err);
+		 }
+		 res.json(photos);
+	 });
+ }
+ 
+ /**
+  * remove photo
+  */
+  
+  exports.removePhoto = function (req, res) {
+	  var photo = req.body;
+	  Photo.removePhoto(photo.name, function (err, photos) {
+		  if (err) {
+			  res.json(err);
+		  }
+		  res.send('removed this photo');
+	  });
+  }

@@ -1,0 +1,55 @@
+<div class="home-view row">
+	<div class="empty-gallery-alert" ng-show="emptyGalleryAlert">
+		<h3>Please add your first image~~!!</h3>
+	</div>
+	<div class="mainImage" ng-show="sliderMode === 1">
+ 		<img class="home-slider" src="{{ img.thumbpath.mediumThumb }}" ng-repeat="img in mainImages" ng-class="{sliderhide: mainImageTopOne === img._id, sliderleft50: sliderLeft50 === img._id, sliderleft100: sliderLeft100 === img._id}">
+	</div>
+	<div class="user-profile col-md-4 col-md-offset-4 col-xs-12" ng-show="sliderMode === 0">
+		<div class="profilePhoto">
+			<img class="img-circle" width="150px" height="150px" src="{{ userProfilePhoto }}">
+		</div>
+		<div class="profile-panel" ng-show="homepageMode === 0">
+			<h2>{{ userName }}</h2>
+			<h5>{{ userLocation }}</h5>
+			<h5>{{ userDescription }}</h5>
+			<span class="profile-panel-item">
+				<span class="glyphicon glyphicon-thumbs-up"></span>
+				<span class="collectionPoints">35</span>
+			</span>
+			<span class="profile-panel-item">
+				<span class="glyphicon glyphicon-camera"></span>
+				<span class="collectionPoints">125</span>
+			</span>
+			<section>
+				<button type="button" class="btn btn-primary btn-lg col-xs-4" ng-click="showFriends()"><span class="glyphicon glyphicon-user"></span>Friends</button>
+				<button type="button" class="btn btn-primary btn-lg col-xs-4"><span class="glyphicon glyphicon-plus-sign"></span><a href="/#upload">Upload</a></button>
+				<button type="button" class="btn btn-primary btn-lg col-xs-4" ng-click="showSlider()"><span class="glyphicon glyphicon-play"></span>Slider</button>
+			</section>
+		</div>
+		<div class="friends-panel" ng-show="homepageMode === 1">
+			<form class="search-users">
+				<label for="inputUsername" style="display:block">Search User</label>
+				<div class="col-xs-12">
+					<div class="input-group">
+						<input class="form-control" placeholder="input username" ng-model="searchingStr" ng-keyup="searchUser(searchingStr)">
+						<span class="input-group-btn">
+		        			<button class="btn btn-default" type="button" ng-click="clearInput()"><span class="glyphicon glyphicon-remove-circle"></span></button>
+		      			</span>
+					</div>
+				</div>
+				<ul class="user-results col-xs-12">
+					<li class="autocomplete-row" ng-repeat="result in results">
+						<img src="{{ result.profilePhotoUrl }}"/>
+						<span>{{ result.name }}</span>
+						<span class="glyphicon glyphicon-plus add-friend-button" ng-click="addToFriend(result)"></span>
+					</li>
+				</ul>
+			</form>
+			<div class="friend-list col-md-6 col-xs-12" ng-repeat="friend in userFriendList">
+				<img src="{{ friend.profilePhotoUrl }}"/>
+				<span>{{ friend.name }}</span>
+			</div>
+		</div>
+	</div>
+</div>
