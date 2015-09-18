@@ -6,7 +6,6 @@ exports.getCurrentUser = function (req, res) {
 		if (err) {
 			res.json(err);
 		}
-		// console.log(user);
 		res.render('layout', { user: user });
 	});
 }
@@ -16,6 +15,17 @@ exports.searchUser = function (req, res) {
 	User.searchUser(char, function (err, users) {
 		if (err) res.json(err);
 		res.json(users);
+	});
+}
+
+exports.getFriendInfo = function (req, res) {
+	var friendname = req.query.friendname;
+	User.getFriendInfo(friendname, function (err, friend) {
+		if (err) {
+			res.json(err);
+		}
+		// console.log(friend);
+		res.send(friend);
 	});
 }
 

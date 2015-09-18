@@ -1,18 +1,21 @@
+/* global io */
 /// <reference path="../../typings/angularjs/angular.d.ts"/>
 /* global LoggedIn */
 'use strict'
 
 var galleryControllers = angular.module('galleryControllers', []);
 
-galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$window','MainImageService', 'SearchUserService', 'AddFriendService',
-	function ($scope, $timeout, $interval, $window, MainImageService, SearchUserService, AddFriendService) {
+galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$window', '$location',
+	'MainImageService', 'SearchUserService', 'AddFriendService',
+	function ($scope, $timeout, $interval, $window, $location,
+		MainImageService, SearchUserService, AddFriendService) {
 		//Profile Label
 		$scope.userProfilePhoto = LoggedIn.userPhoto;
 		$scope.userName = LoggedIn.name;
 		$scope.userLocation = LoggedIn.location;
 		$scope.userDescription = LoggedIn.description;
 		$scope.userFriendList = LoggedIn.friends;
-
+		
 		$scope.emptyGalleryAlert = true;
 		// enable slider mode by 1, disable by 0
 		$scope.sliderMode = 0;
@@ -89,11 +92,18 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 		
 		// show friends list
 		$scope.showFriends = function () {
-			$scope.homepageMode = -1;
-			$timeout(function(){
-				$scope.homepageMode = 1;
-				// console.log($scope.userFriendList)
-			}, 500);
+			// $scope.homepageMode = -1;
+			if ($scope.homepageMode === 0) {
+				$timeout(function(){
+					$scope.homepageMode = 1;
+					// console.log($scope.userFriendList)
+				}, 500);
+			} else if ($scope.homepageMode === 1) {
+				$timeout(function(){
+					$scope.homepageMode = 0;
+					// console.log($scope.userFriendList)
+				}, 500);
+			}
 		}
 		
 		// search users
@@ -112,7 +122,6 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 		}
 		
 		function usersGetRequest(str) {
-			
 			SearchUserService.query({
 				username: LoggedIn.name,
 				char: str
@@ -120,7 +129,6 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 				for (var i = 0; i < data.length; i++) {
 					$scope.results.push(data[i])
 				}
-				// $scope.searching = false;
 			});
 		}
 		// add one friend to friend list
@@ -136,6 +144,10 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 		
 		function clearSearchResults(results) {
 			results.splice(0, results.length);
+		}
+		
+		$scope.jumpToFriendPage = function(friendName) {
+			$location.path('/friend/' + friendName);
 		}
 		
 	}
@@ -256,10 +268,10 @@ galleryControllers.controller('UploadCtrl', ['$scope', '$timeout', 'Upload',
 
 // ---------------------- GALLERY PAGE CONTROLLER ---------------------------------
 
-galleryControllers.controller('GalleryCtrl', ['$scope', '$window', '$animate', 'GalleryService', 'Lightbox', 'FavouritePhotoService',
-	'ShowFavouriteService',
-	function ($scope, $window, $animate, GalleryService, Lightbox, FavouritePhotoService
-		, ShowFavouriteService) {
+galleryControllers.controller('GalleryCtrl', ['$scope', '$route' ,'$window', '$location', '$animate', 'GalleryService', 
+	'Lightbox', 'FavouritePhotoService', 'ShowFavouriteService', 'RemoveImageService',
+	function ($scope, $route, $window, $location, $animate, GalleryService, Lightbox, FavouritePhotoService
+		, ShowFavouriteService, RemoveImageService) {
 		$scope.galleryQueue = [];
 		$scope.imgSelected = false;
 		$scope.lightImgSrc;
@@ -271,7 +283,7 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$window', '$animate', '
 		$scope.loadMoreImgs = function () {
 			GalleryService.query({
 				username: LoggedIn.name,
-				id: skip
+				skip: skip
 			}, function (data) {
 				for (var i = 0; i < data.length; i++) {
 					$scope.galleryQueue.push(data[i]);
@@ -284,6 +296,10 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$window', '$animate', '
 		
 		$scope.searchImgs = function () {
 			$scope.gallerySearching = true;
+		}
+		
+		$scope.clearInput = function () {
+			$scope.searchingStr = '';
 		}
 		
 		$scope.stopSearch = function () {
@@ -332,15 +348,75 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$window', '$animate', '
 		
 		$scope.showFavourites = function () {
 			$scope.allphotos = false;
+			$scope.galleryQueue.splice(0, $scope.galleryQueue.length);
 			ShowFavouriteService.query({
 				username: LoggedIn.name
 			}, function (data) {
-				$scope.galleryQueue.splice(0, $scope.galleryQueue.length);
 				for (var i = 0; i < data.length; i++) {
 					$scope.galleryQueue.push(data[i]);
 				}
 			});
 		}
 		
+		$scope.removeImgAlert = function () {
+			angular.element('#removeAlert').show();
+		}
+		
+		$scope.removeImgAlertCancel = function () {
+			angular.element('#removeAlert').hide();
+		}
+		
+		$scope.removeImg = function () {
+			RemoveImageService.delete({
+				username: LoggedIn.name, 
+				name: $scope.lightImg.name,
+			}, function (data) {
+				// $location.path('/gallery');
+				$route.reload(); 
+			});
+		}
 	}
+]);
+
+/**    
+ * Friend Page Controller
+ */
+ 
+ galleryControllers.controller('FriendPageCtrl', ['$scope', '$route', '$routeParams', '$location',
+	 'GetFriendInfoService', 'GetFriendPhotoService',
+	 function ($scope, $route, $routeParams, $location
+		 , GetFriendInfoService, GetFriendPhotoService) {
+			 
+		$scope.galleryQueue = [];
+		
+		var socket = io.connect();
+		// socket.on('news', function (data) {
+		// 	console.log(data);
+		//     socket.emit('my other event', { my: 'wtf' });
+		// });
+
+		 GetFriendInfoService.query({
+			 username: LoggedIn.name,
+			 friendname: $routeParams.friendname
+		 }, function (friend) {
+			 $scope.friendProfilePhoto = friend[0].profilePhotoUrl.replace('_normal', '_400x400');
+			 $scope.friendName = friend[0].name;
+			 $scope.friendLocation = friend[0].location;
+			 $scope.friendDescription = friend[0].description;
+		 });
+
+		 GetFriendPhotoService.query({
+			 username: LoggedIn.name,
+			 friendname: $routeParams.friendname
+		 }, function (photos) {
+			 for (var i = 0; i < photos.length; i++) {
+				 $scope.galleryQueue.push(photos[i]);
+			 }
+		 });
+		 
+		 $scope.sendMessage = function (message) {
+			 var date = Date();
+			 socket.emit('user message', { message: message, date: date, user: LoggedIn.name, friend: $routeParams.friendname });
+		 }
+	 }
 ]);

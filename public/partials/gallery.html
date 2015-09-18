@@ -15,7 +15,14 @@
 			<div class="light-image-controller">
 				<span class="glyphicon glyphicon-remove remove-button" ng-click="closeLight()"></span>
 				<span class="glyphicon glyphicon-star star-button" ng-click="addToFavourite()"></span>
-				<span class="glyphicon glyphicon-trash trash-button"></span>
+				<span class="glyphicon glyphicon-trash trash-button" ng-click="removeImgAlert()"></span>
+			</div>
+			<div id="removeAlert" class="alert alert-danger alert-dismissible fade in" role="alert">
+				<h3>Do you want to remove this image?</h3>
+				<p>
+					<button type="button" class="btn btn-danger" ng-click="removeImg()">Remove</button>
+					<button type="button" class="btn btn-default" ng-click="removeImgAlertCancel()">Cancel</button>
+				</p>
 			</div>
 		</div>
 	</div>

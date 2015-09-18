@@ -21,6 +21,19 @@ galleryService.factory('AddFriendService', ['$resource',
 	}	
 ]);
 
+galleryService.factory('GetFriendInfoService', ['$resource',
+	function ($resource) {
+		return $resource('/:username/home/friendInfo', { username: '@username'}, {});
+	}
+]);
+
+galleryService.factory('GetFriendPhotoService', ['$resource',
+	function ($resource) {
+		return $resource('/:username/home/friend/:friendname', { username: '@username', friendname: '@friendname'}, {});	
+	}
+]);
+	
+
 galleryService.factory('GalleryService', ['$resource', 
 	function ($resource) {
 		return $resource('/:username/gallery', {}, {});
@@ -29,7 +42,7 @@ galleryService.factory('GalleryService', ['$resource',
 
 galleryService.factory('FavouritePhotoService', ['$resource',
 	function ($resource) {
-		return $resource('/:username/gallery/addToFavourite', { username: '@name'}, 
+		return $resource('/:username/gallery/addToFavourite', { username: '@username'}, 
 			{
 				'update': { method: 'PUT' }
 			});
@@ -39,6 +52,14 @@ galleryService.factory('FavouritePhotoService', ['$resource',
 galleryService.factory('ShowFavouriteService', ['$resource',
 	function ($resource) {
 		return $resource('/:username/gallery/showFavourites', {}, {});
+	}
+]);
+
+galleryService.factory('RemoveImageService', ['$resource', 
+	function ($resource) {
+		return $resource('/:username/gallery/removeImage/:name', { 
+			username: '@username', name: 'name'
+		}, {});
 	}
 ]);
 

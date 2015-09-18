@@ -1,3 +1,4 @@
+/* global connect */
 var express = require('express');
 var config = require('./config/config');
 var fs = require('fs');
@@ -23,6 +24,8 @@ var models_path = __dirname + '/models';
 });
 
 var app = express();
+// var server = require('http').Server(app);
+// var io = require('socket.io')(server);
 
 require('./config/passport') (config, passport);
 

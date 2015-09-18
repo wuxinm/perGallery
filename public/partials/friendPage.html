@@ -1,0 +1,93 @@
+<div class="friend-view row">
+	<div class="friend-profile col-xs-12">
+		<div class="profile-photo col-xs-12 col-md-1">
+			<img class="img-circle" width="65px" height="65px" src="{{ friendProfilePhoto }}">
+			<div class="profile-photo-item">
+				<span>
+					<span class="glyphicon glyphicon-heart"></span>
+					<span class="collectionPoints">35</span>
+				</span>
+				<span>
+					<span class="glyphicon glyphicon-camera"></span>
+					<span class="collectionPoints">125</span>
+				</span>
+			</div>
+		</div>
+		<div class="profile-info col-xs-12 col-md-2">
+			<h3>{{ friendName }}</h3>
+			<p>{{ friendLocation }}<span class="glyphicon glyphicon-map-marker"></span></p>
+			<p>{{ friendDescription }}<span class="glyphicon glyphicon-certificate"></span></p>
+		</div>
+	</div>
+	<div ng-repeat="img in galleryQueue" class="gallery-img-preview col-xs-6 col-md-2" ng-click="showImg(this, $event)">
+		<img src="{{ img.thumbpath.lowThumb }}">
+		<div class="gallery-img-preview-mask">
+			<div class="gallery-img-preview-infobar">
+				<span class="glyphicon glyphicon-heart col-xs-4"></span>
+				<span class="glyphicon glyphicon-comment col-xs-4"><h6>12</h6></span>
+			</div>
+		</div>
+	</div>
+	<div class="profile-bottom-bar">
+		<div class="profile-bottom-bar-buttons">
+			<button type="button" class="btn btn-info" ng-click="showFriends()" data-toggle="modal" data-target="#messageModal"><span class="glyphicon glyphicon-send"></span>Message</button>
+			<button type="button" class="btn btn-info"><span class="glyphicon glyphicon-search"></span><a href="/#upload">Search</a></button>
+		</div>
+	</div>
+	<div class="modal fade" id="messageModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title">testing</h4>
+				</div>
+				<div class="modal-body">
+					<div class="container-fluid">
+						<div class="row">
+							<ul style="padding: 0px">
+								<li class="col-xs-12">
+									<span class="col-xs-1">
+										<img class="img-circle" width="45px" height="45px" src="{{ friendProfilePhoto }}">
+									</span>
+									<div class="tooltip col-xs-5" role="tooltip">
+										<div class="tooltip-arrow"></div>
+										<div class="tooltip-inner">
+											taday is a good day
+										</div>
+									</div>
+								</li>
+								<li class="col-xs-12 message-user">
+									<div class="tooltip col-xs-5 col-xs-offset-6" role="tooltip">
+										<div class="tooltip-arrow"></div>
+										<div class="tooltip-inner">
+											fdsafadsfdsafdasfdsafsdafsdffdf
+											fdsafdsfadsf
+											fdsafdasfdsf
+											fdsafdsfdsfdsafdsafsdfdsafasdfsda@xqqqqqqqq
+											fdsafasdffdsfafdsafsdfasfsfaf
+										</div>
+									</div>
+									<span class="col-xs-1">
+										<img class="img-circle" width="45px" height="45px" src="{{ friendProfilePhoto }}">
+									</span>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<div class="message-input-bar">
+						<div class="input-group">
+						<input class="form-control" placeholder="input photoname" ng-model="messageContent">
+						<span class="input-group-btn">
+				        	<button class="btn btn-default" type="button" ng-click="clearInput()"><span class="glyphicon glyphicon-remove-circle"></span></button>
+							<button class="btn btn-success" style="margin: 0" type="button" ng-click="sendMessage(messageContent)"><span class="glyphicon glyphicon-send" style="padding-right: 10px"></span>send</button>
+				      	</span>
+						</div>
+					</div>
+					<!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

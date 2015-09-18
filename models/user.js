@@ -36,6 +36,11 @@ UserSchema.statics.searchUser = function (char, callback) {
 	this.find({ name: new RegExp(char) }, 'name profilePhotoUrl', callback);
 }
 
+// get friend info
+UserSchema.statics.getFriendInfo = function (friendname, callback) {
+	this.find({ name: friendname }, callback);
+}
+
 // add friend
 UserSchema.statics.addFriend = function (loginName, friend, callback) {
 	this.update({ name: loginName }, { $push: { friends: friend } }, callback);

@@ -1,10 +1,11 @@
 var mongoose = require('mongoose');
 var Photo = mongoose.model('Photo');
 var im = require('imagemagick');
+var fs = require('fs');
 
 exports.getAllPhotos = function (req, res) {
 	if(req.params.username === req.user.username) {
-		Photo.getPhotos(function (err, photos) {
+		Photo.getAllPhotos(function (err, photos) {
 			if (err) 
 				res.json(err)
 			// console.log(photos);
@@ -20,6 +21,16 @@ exports.getRandomPhoto = function (req, res) {
 			res.json(photo);		
 		})
 	}
+}
+
+exports.getFriendPhotos = function (req, res) {
+	var friendname = req.params.friendname;
+	Photo.getFriendPhotos(friendname, function (err, photos) {
+		if (err) {
+			res.json(err);
+		}
+		res.json(photos);
+	})
 }
 
 /* upload functions */
@@ -77,10 +88,12 @@ function addImgToDB (img, req, res) {
 
 exports.galleryPhotos = function (req, res) {
 	if(req.params.username === req.user.username) {
-		var id = req.query.id;
-		Photo.dynamicPhotos(id, function (err, photos) {
+		var skip = req.query.skip;
+		var username = req.user.username;
+		Photo.dynamicPhotos(skip, username, function (err, photos) {
 			if(err)
 				res.json(err);
+			// console.log(photos);
 			res.json(photos);
 		})
 	}
@@ -92,10 +105,11 @@ exports.galleryPhotos = function (req, res) {
 
 exports.addToFavouritePhoto = function (req, res) {
 	var photo = req.body;
-	Photo.addToFavourite(photo.name, function(err, photo) {
+	Photo.addToFavourite(photo.name, function(err, photos) {
 		if (err) {
 			res.json(err);
 		}
+		// console.log(photos);
 		res.send('add this photo as favourite');
 	});
 }
@@ -110,6 +124,7 @@ exports.addToFavouritePhoto = function (req, res) {
 		 if (err) {
 			 res.json(err);
 		 }
+		//  console.log(photos);
 		 res.json(photos);
 	 });
  }
@@ -119,11 +134,23 @@ exports.addToFavouritePhoto = function (req, res) {
   */
   
   exports.removePhoto = function (req, res) {
-	  var photo = req.body;
-	  Photo.removePhoto(photo.name, function (err, photos) {
-		  if (err) {
-			  res.json(err);
-		  }
-		  res.send('removed this photo');
+	  var photoName = req.params.name;
+	  var path = './public/uploads/' + photoName;
+	  var mediumThumbPath = './public/uploads/mediumThumbnails/' + photoName;
+	  var lowThumbPath = './public/uploads/lowThumbnails/' + photoName;
+	  var paths = [path, mediumThumbPath, lowThumbPath];
+	  var i = paths.length;
+	  Photo.removePhoto(photoName, function (err, photo) {
+		  paths.forEach(function(filepath){
+			  fs.unlink(filepath, function() {
+				  i --;
+				  if (err) {
+					  res.json(err)
+				  }
+				  else if (i <= 0) {
+					  res.send('all files removed');
+				  }
+			  });
+		  });
 	  });
   }

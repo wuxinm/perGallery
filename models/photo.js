@@ -65,13 +65,18 @@ PhotoSchema.statics.randomPhoto = function (username, callback) {
 };
 
 // select all the photos from photos collection
-PhotoSchema.statics.getPhotos = function (callback) {
+PhotoSchema.statics.getAllPhotos = function (callback) {
 	this.find({}, callback);
 }
 
+// select friend's photo to his page
+PhotoSchema.statics.getFriendPhotos =function (friendname, callback) {
+	this.find({ username: friendname }, callback);
+}
+
 // select some photos from photos collection
-PhotoSchema.statics.dynamicPhotos = function (id, callback) {
-	this.find().limit(30).skip(id).exec(callback);
+PhotoSchema.statics.dynamicPhotos = function (skip, username, callback) {
+	this.find({ username: username }).limit(30).skip(skip).exec(callback);
 }
 
 PhotoSchema.statics.addToFavourite = function (photoName, callback) {

@@ -1,3 +1,5 @@
+@import url(https://fonts.googleapis.com/css?family=Poiret+One);
+
 body {
   margin-top: 50px !important;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
@@ -19,7 +21,7 @@ a {
 
 /************************ Home page ************************/
 .home-view {
-	background: #b8ffdb;
+	/*background: #b8ffdb;*/
 	height: 100%;
 }
 
@@ -54,17 +56,8 @@ a {
 	color: #ffffff;
 	position: absolute;
 	text-align: center;
-	top: 100px;
-	/*left: 30%;*/
-	/*width: 40%;*/
-	height: 75%;
-	padding: 20px 0px;
-	background: #333;
-}
-
-.user-profile h5 {
-	margin-top: 20px;
-	margin-bottom: 20px;
+	padding: 10px 0px 5px 0px;
+	background: #0084b4;
 }
 
 .user-profile.ng-hide {
@@ -77,66 +70,49 @@ a {
   transition: all linear 0.5;
 }
 
-.profilePhoto {
-	padding-bottom: 15px;
-	border-bottom: 5px solid #101010;
+.profile-photo {
+	padding: 0 !important;
 }
 
-.profile-panel.ng-hide {
-	opacity: 0;	
+.profile-photo-item {
+	margin-top: 5px;
 }
 
-.profile-panel.ng-hide-add.ng-hide-add-active,
-.profile-panel.ng-hide-remove.ng-hide-remove-active {
-  -webkit-transition: all linear 0.5s;
-  transition: all linear 0.5;
+.profile-photo-item .glyphicon,
+.profile-photo-item span {
+	font-size: 15px;
 }
 
-.profile-panel section {
-	margin-top: 30px;
+.profile-info {
+	padding-bottom: 10px;
 }
 
-.profile-panel-item {
-	/*float: left;*/
-	width: 93px;
-	margin-left: 10px;
+.profile-info h3 {
+	margin: 10px 0px 5px 0px;
 }
 
-.profile-panel-item .glyphicon {
-	font-size: 20px;
+.profile-info p {
+	font-family: 'Poiret One', cursive;
+	font-size: 12px;
+	margin: 0;
 }
 
-.collectionPoints {
-	font-size: 20px;
-	margin-top: 20px;
-}
-
-.profile-panel button {
-	margin-top: 10px;
-	background: #101010;
-	border-color: #ffffff;
-	padding: 15px 16px;
-}
-
-.profile-panel button:hover, .profile-panel button:focus,
-.profile-panel button:active {
-	color: #101010;
-	background: #cccccc;
-	border-color: #cccccc;
-	outline: none !important;
-}
-
-.profile-panel button span {
-	margin-right: 10px;
-}
-
-.profile-panel button a {
-	color: #ffffff;
-	text-decoration: none;
+.profile-info span {
+	margin-left: 2px;
 }
 
 .friends-panel {
-	color: #ffffff;
+	border-bottom: 1px solid #e1e8ed;
+	box-shadow: 1px 1px 1px #eee;
+	padding-bottom: 15px;	
+}
+
+.friends-form {
+	margin-top: 12px;
+}
+
+.friend-list:hover {
+	cursor: pointer;
 }
 
 .friends-panel.ng-hide {
@@ -145,29 +121,78 @@ a {
 
 .friends-panel.ng-hide-add.ng-hide-add-active,
 .friends-panel.ng-hide-remove.ng-hide-remove-active {
-  -webkit-transition: all linear 0.5s;
-  transition: all linear 0.5s;
+  -webkit-transition: all linear 0.2s;
+  transition: all linear 0.2s;
+}
+
+.profile-bottom-bar {
+	text-align: center;
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	height: 50px;
+	padding-top: 8px;
+	background-color: #101010; 
+}
+
+.profile-bottom-bar button {
+	color: #fff;
+	background-color: transparent;
+	border-color: #e1e8ed;
+	border-radius: 5px;
+}
+
+.profile-bottom-bar button a {
+	color: #ffffff;
+	text-decoration: none;
+}
+
+.profile-bottom-bar span {
+	margin-right: 5px;	
+}
+
+.profile-bottom-bar button:hover, .profile-bottom-bar button:focus,
+.profile-bottom-bar button:active {
+	background: #0084b4;
+	border-color: #00CCFF;
+	outline: none !important;
 }
 
 .search-users input {
+	/*padding: 0 !important;*/
+	height: 25px;
 	border-radius: 5px;
 	color: black;
 }
 
+.search-users button {
+	height: 25px;
+	padding: 0 10px;
+	border-radius: 5px;
+}
+
+.input-group-btn span {
+	font-size: 13px;
+}
+
 .user-results {
+	text-align: center;
 	padding-left: 0;
 	/*margin-top: 40px;*/
 }
 
 .autocomplete-row {
 	list-style: none;
-	background-color: #101010;
+	background-color: transparent;
 	border-radius: 1px;
-	padding: 10px;
+	padding: 5px;
 	border-bottom: 1px solid #cccccc;
 }
 
 .autocomplete-row img, .friend-list img {
+	width: 30px;
+	height: 30px;
 	border-radius: 50%;
 	margin-right: 12px;
 }
@@ -175,22 +200,13 @@ a {
 .add-friend-button {
 	margin-left: 20px;
 	padding: 5px;
-	font-size: 20px;
+	font-size: 8px;
 	border-radius: 50%;
-	border: 2px solid #ffffff;
+	border: 1px solid #000
 }
 
-.input-group button {
-	border-radius: 4px;
-}
-
-.input-group-btn span {
-	font-size: 16px;
-}
-
-.friend-list {
-	margin-top: 15px;
-	padding: 0 !important;
+.add-friend-button:hover {
+	cursor: pointer;
 }
 
 /*********************** UPLOAD VIEW **********************/
@@ -406,6 +422,14 @@ a {
 	cursor: pointer;
 }
 
+#removeAlert {
+	position: absolute;
+	bottom: 0;
+	left: 20%;
+	width: 60%;
+	display: none;
+}
+
 .remove-button {
 	padding: 12px 10px 10px 10.5px;
 }
@@ -423,9 +447,9 @@ a {
 	position: fixed;
 	bottom: 0;
 	left: 0;
-	height: 60px;
+	height: 50px;
 	width: 100%;
-	padding-top: 12px;
+	padding-top: 8px;
 	background-color: #101010;
 }
 
@@ -477,4 +501,40 @@ a {
 .gallery-img-preview.ng-leave.ng-leave-active {
   opacity: 0;
   width: 0;
+}
+
+/*********************** FRIEND VIEW **********************/
+.friend-profile {
+	padding: 10px 0 5px 0;
+	text-align: center;
+	color: #000;
+	background-color: #b8ffdb;
+}
+
+.message-button {
+	margin-top: 25px;
+}
+
+.tooltip {
+	/*margin: 0 !important;*/
+	clip: rect(0px,auto,auto,0px);
+	/*padding: 0 !important;*/
+}
+
+#messageModal li {
+    list-style: none;
+	margin-bottom: 10px;
+	padding: 0;
+}
+
+#messageModal li span {
+	padding: 0;
+}
+
+.message-user {
+	text-align: right;
+}
+
+.message-input-bar button{
+	border-radius: 5px;
 }

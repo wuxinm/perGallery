@@ -31,9 +31,12 @@ router.get('/:username', user.getCurrentUser);
 router.get('/:username/home', photo.getAllPhotos);
 router.get('/:username/home/friends/search', user.searchUser);
 router.put('/:username/home/friends/addFriend', user.addFriendtoDB);
+router.get('/:username/home/friendInfo', user.getFriendInfo);
+router.get('/:username/home/friend/:friendname', photo.getFriendPhotos);
 router.post('/:username/upload', photo.uploadPhotos);
 router.get('/:username/gallery', photo.galleryPhotos);
 router.put('/:username/gallery/addToFavourite', photo.addToFavouritePhoto);
 router.get('/:username/gallery/showFavourites', photo.showFavouritePhotos);
+router.delete('/:username/gallery/removeImage/:name', photo.removePhoto);
 
 module.exports = router;

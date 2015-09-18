@@ -26,6 +26,10 @@ galleryApp.config(['$routeProvider',
 			templateUrl: 'partials/gallery.html',
 			controller: 'GalleryCtrl'
 		}).
+		when('/friend/:friendname', {
+			templateUrl: 'partials/friendPage.html',
+			controller: 'FriendPageCtrl'
+		}).
 		otherwise({
 			redirectTo: '/home'
 		});
