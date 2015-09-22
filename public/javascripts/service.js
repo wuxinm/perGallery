@@ -14,9 +14,18 @@ galleryService.factory('SearchUserService', ['$resource',
 
 galleryService.factory('AddFriendService', ['$resource',
 	function ($resource) {
-		return $resource('/:username/home/friends/addFriend', { username: '@name'}, 
+		return $resource('/:username/home/friends/addFriend', { username: '@username'}, 
 		{
 			'update': { method: 'PUT' }
+		});
+	}	
+]);
+
+galleryService.factory('NotificationService', ['$resource',
+	function ($resource) {
+		return $resource('/:username/home/notification', { username: '@username'}, 
+		{
+			'read': { method: 'PUT' }
 		});
 	}	
 ]);
@@ -32,7 +41,12 @@ galleryService.factory('GetFriendPhotoService', ['$resource',
 		return $resource('/:username/home/friend/:friendname', { username: '@username', friendname: '@friendname'}, {});	
 	}
 ]);
-	
+
+galleryService.factory('GetFriendMessageService', ['$resource',
+	function ($resource) {
+		return $resource('/:username/home/friend/:friendname/messages', { username: '@username', friendname: '@friendname'}, {});	
+	}
+]);
 
 galleryService.factory('GalleryService', ['$resource', 
 	function ($resource) {

@@ -3,6 +3,8 @@ var router = express.Router();
 var passport = require('passport');
 var photo = require('../controllers/photo');
 var user = require('../controllers/user');
+var message = require('../controllers/message');
+var notif = require('../controllers/notification');
 
 router.get('/auth/twitter', passport.authenticate('twitter'));
 router.get('/auth/twitter/callback', passport.authenticate('twitter', {
@@ -27,13 +29,20 @@ router.get('/logout', function (req, res) {
 	req.logout();
 	res.redirect('/');
 });
+
 router.get('/:username', user.getCurrentUser);
 router.get('/:username/home', photo.getAllPhotos);
+router.get('/:username/home/notification', notif.getUserNotif);
+router.put('/:username/home/notification', notif.setNotifAsReaded);
 router.get('/:username/home/friends/search', user.searchUser);
 router.put('/:username/home/friends/addFriend', user.addFriendtoDB);
+
 router.get('/:username/home/friendInfo', user.getFriendInfo);
 router.get('/:username/home/friend/:friendname', photo.getFriendPhotos);
+router.get('/:username/home/friend/:friendname/messages', message.getMessages);
+
 router.post('/:username/upload', photo.uploadPhotos);
+
 router.get('/:username/gallery', photo.galleryPhotos);
 router.put('/:username/gallery/addToFavourite', photo.addToFavouritePhoto);
 router.get('/:username/gallery/showFavourites', photo.showFavouritePhotos);

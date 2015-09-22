@@ -6,9 +6,9 @@
 var galleryControllers = angular.module('galleryControllers', []);
 
 galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$window', '$location',
-	'MainImageService', 'SearchUserService', 'AddFriendService',
+	'MainImageService', 'SearchUserService', 'AddFriendService', 'NotificationService',
 	function ($scope, $timeout, $interval, $window, $location,
-		MainImageService, SearchUserService, AddFriendService) {
+		MainImageService, SearchUserService, AddFriendService, NotificationService) {
 		//Profile Label
 		$scope.userProfilePhoto = LoggedIn.userPhoto;
 		$scope.userName = LoggedIn.name;
@@ -39,6 +39,28 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 		var minSearchLength = 2;
 		$scope.searching = false;
 		$scope.results = [];
+		
+		// notification queue
+		$scope.notifQueue = [];
+		
+		var socket = io.connect();
+		socket.on('private message', function(data) {
+			if (data.friend === LoggedIn.name) {
+				$scope.notifQueue.push(data);
+			}
+		});
+		
+		NotificationService.query({
+			username: LoggedIn.name
+		}, function (data) {
+			if (data.length !== 0) {
+				data.forEach(function(notif) {
+					if (!notif.readed) {
+						$scope.notifQueue.push(notif);	
+					}
+				}, this);
+			}
+		});
 		
 		MainImageService.query({
 			username: LoggedIn.name
@@ -147,7 +169,7 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 		}
 		
 		$scope.jumpToFriendPage = function(friendName) {
-			$location.path('/friend/' + friendName);
+			$location.path('/home/friend/' + friendName);
 		}
 		
 	}
@@ -379,22 +401,27 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route' ,'$window', '$l
 ]);
 
 /**    
- * Friend Page Controller
+ ********************* Friend Page Controller *************************
  */
  
  galleryControllers.controller('FriendPageCtrl', ['$scope', '$route', '$routeParams', '$location',
-	 'GetFriendInfoService', 'GetFriendPhotoService',
+	 'GetFriendInfoService', 'GetFriendPhotoService', 'GetFriendMessageService',
 	 function ($scope, $route, $routeParams, $location
-		 , GetFriendInfoService, GetFriendPhotoService) {
+		 , GetFriendInfoService, GetFriendPhotoService, GetFriendMessageService) {
 			 
 		$scope.galleryQueue = [];
-		
-		var socket = io.connect();
-		// socket.on('news', function (data) {
-		// 	console.log(data);
-		//     socket.emit('my other event', { my: 'wtf' });
-		// });
+		$scope.messages = [];
+		$scope.friend = $routeParams.friendname;
+		var messageContent = "";
+		var msg_each = "";
 
+		var socket = io.connect();
+		socket.on('private message', function(data) {
+			if (data.friend === LoggedIn.name) {
+				newFriendMessage(data);
+			}
+		});
+		
 		 GetFriendInfoService.query({
 			 username: LoggedIn.name,
 			 friendname: $routeParams.friendname
@@ -414,9 +441,46 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route' ,'$window', '$l
 			 }
 		 });
 		 
+		 $scope.messageDialog = function () {
+			 angular.element('.message-content').empty();
+			 messageContent = "";
+			 GetFriendMessageService.query({
+				 username: LoggedIn.name,
+			 	 friendname: $routeParams.friendname
+			 }, function (messages) {
+				 messages.forEach(function(msg) {
+					 if (msg.user === LoggedIn.name && msg.friend === $routeParams.friendname) {
+						 msg_each = '<li class="col-xs-12"><div class="tooltip user-message col-xs-5 col-xs-offset-6" role="tooltip"><div class="tooltip-inner">' + msg.message 
+						 + '</div></div><span class="col-xs-1"><img class="img-circle" width="45px" height="45px" src="' + LoggedIn.userPhoto + '"></span></li>'
+					 } else {
+						 msg_each = '<li class="col-xs-12"><span class="col-xs-1"><img class="img-circle" width="45px" height="45px" src="' + $scope.friendProfilePhoto 
+						 + '"></span><div class="tooltip friend-message col-md-5 col-xs-9" role="tooltip"><div class="tooltip-inner">' + msg.message + '</div></div></li>'
+					 }
+					 messageContent = messageContent.concat(msg_each);
+				 }, this);
+				 angular.element('.message-content').append(messageContent);
+				 var messageBody = angular.element('.message-body');
+				 messageBody.scrollTop(messageBody.scrollHeight);
+				 console.log(messageBody.scscrollHeight);
+			 });
+		 }
+		 
 		 $scope.sendMessage = function (message) {
 			 var date = Date();
-			 socket.emit('user message', { message: message, date: date, user: LoggedIn.name, friend: $routeParams.friendname });
+			 var msg = { message: message, date: date, user: LoggedIn.name, friend: $routeParams.friendname };
+			 newUserMessage(msg);
+			 socket.emit('message', msg);
+			 $scope.messageInput = "";
+		 }
+		 
+		 function newUserMessage (msg) {
+			 msg_each = '<li class="col-xs-12"><div class="tooltip user-message col-xs-5 col-xs-offset-6" role="tooltip"><div class="tooltip-inner">' + msg.message + '</div></div><span class="col-xs-1"><img class="img-circle" width="45px" height="45px" src="' + LoggedIn.userPhoto + '"></span></li>'
+			 angular.element('.message-content').append(msg_each);
+		 }
+		 
+		 function newFriendMessage (msg) {
+			 msg_each = '<li class="col-xs-12"><span class="col-xs-1"><img class="img-circle" width="45px" height="45px" src="' + $scope.friendProfilePhoto + '"></span><div class="tooltip friend-message col-xs-5" role="tooltip"><div class="tooltip-inner">' + msg.message + '</div></div></li>'
+			 angular.element('.message-content').append(msg_each);
 		 }
 	 }
 ]);

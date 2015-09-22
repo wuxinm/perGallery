@@ -515,14 +515,26 @@ a {
 	margin-top: 25px;
 }
 
+.messages-body {
+	height: 500px;
+	overflow-y: scroll;
+}
+
+.message-content {
+	height: 100%;
+}
+
 .tooltip {
-	/*margin: 0 !important;*/
 	clip: rect(0px,auto,auto,0px);
-	/*padding: 0 !important;*/
+}
+
+.message-friendname {
+	font-family: 'Poiret One', cursive;
+	font-size: 26px;
 }
 
 #messageModal li {
-    list-style: none;
+  list-style: none;
 	margin-bottom: 10px;
 	padding: 0;
 }
@@ -531,8 +543,17 @@ a {
 	padding: 0;
 }
 
-.message-user {
-	text-align: right;
+.user-message {
+	text-align: right !important;
+}
+
+.user-message .tooltip-inner {
+	background-color: #0084b4;
+}
+
+.friend-message .tooltip-inner {
+	color: #000;
+	background-color: #ddd;
 }
 
 .message-input-bar button{

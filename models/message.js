@@ -28,7 +28,7 @@ MessageSchema.statics.createMessage = function (data, callback) {
   * get friend's message records
   */
  MessageSchema.statics.getFriendMessages = function (user, friend, callback) {
-	 this.find({ user: user, friend: friend }, callback);
+	 this.find({$or: [{user: user, friend: friend }, {user: friend, friend: user}]}, callback);
  }
  
  /**
@@ -38,4 +38,4 @@ MessageSchema.statics.removeFriendMessages = function (user, friend, callback) {
 	 this.remove({ user: user, friend: friend }, callback);
 }
  
- mongoose.model('Message', MessageSchema);
+mongoose.model('Message', MessageSchema);

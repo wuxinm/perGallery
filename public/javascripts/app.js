@@ -26,7 +26,7 @@ galleryApp.config(['$routeProvider',
 			templateUrl: 'partials/gallery.html',
 			controller: 'GalleryCtrl'
 		}).
-		when('/friend/:friendname', {
+		when('/home/friend/:friendname', {
 			templateUrl: 'partials/friendPage.html',
 			controller: 'FriendPageCtrl'
 		}).
