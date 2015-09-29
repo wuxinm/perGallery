@@ -34,8 +34,8 @@ NotificationSchema.statics.getUserNotification = function(user, callback) {
 /**
  * set this notification as readed
  */
-NotificationSchema.statics.readNotification = function(id, callback) {
-	this.update({ _id: id }, { $set: { readed: true } }, callback);
+NotificationSchema.statics.readNotification = function(friend, user, callback) {
+	this.update({$or: [{user: friend, friend: user }, { user: user, friend: friend }]}, { $set: { readed: true }}, { multi: true }, callback);
 }
 
 mongoose.model('Notification', NotificationSchema);

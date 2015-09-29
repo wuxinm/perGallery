@@ -1,0 +1,32 @@
+<div class="editing-view row">
+	<div class="edit-container">
+		<canvas id="c" style="border: 1px solid black"></canvas>
+	</div>
+	<div id="drawing-mode-options" class="drawing-mode-options col-md-4 col-md-offset-4 col-xs-12"  ng-class="{editing: imgEditing}">
+		<label for="drawing-mode-selector">Mode:</label>
+		<select id="drawing-mode-selector">
+			<option>Pencil</option>
+			<option>Circle</option>
+			<option>Spray</option>
+			<option>Pattern</option>
+			<option>hline</option>
+			<option>square</option>
+			<option>diamond</option>
+		</select>
+		<br>
+		<label for="drawing-color">Line color:</label>
+		<input type="color" id="drawing-color" ng-change="changeBrushColor(this)" ng-model="brushColor">
+		<br>
+		<label for="drawing-line-width">Line width:</label>
+		<span class="info">{{ brushWidth }}</span>
+		<input type="range" value="5" min="0" max="100" id="drawing-line-width" ng-change="changeBrushWidth(this)" ng-model="brushWidth" style="display: inline; width: 130px">
+		<br>
+	</div>	
+	<div class="profile-bottom-bar">
+		<div class="profile-bottom-bar-buttons">
+			<button type="button" class="btn btn-info" ng-click="showEditOptions()"><span class="glyphicon glyphicon-search"></span>Edit Options</button>
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="clearCanvas()"><span class="glyphicon glyphicon-erase"></span>Clear</button>
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="saveCanvas(e)"><span class="glyphicon glyphicon-floppy-disk"></span>Save</button>
+		</div>
+	</div>
+</div>

@@ -19,7 +19,7 @@
 			<p>{{ friendDescription }}<span class="glyphicon glyphicon-certificate"></span></p>
 		</div>
 	</div>
-	<div ng-repeat="img in galleryQueue" class="gallery-img-preview col-xs-6 col-md-2" ng-click="showImg(this, $event)">
+	<div ng-repeat="img in galleryQueue" class="gallery-img-preview col-xs-6 col-md-2" ng-click="jumpToEditPage(this)">
 		<img src="{{ img.thumbpath.lowThumb }}">
 		<div class="gallery-img-preview-mask">
 			<div class="gallery-img-preview-infobar">
@@ -39,7 +39,7 @@
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					<h5 class="modal-title">message to <span class="message-friendname">{{ friend }}</span></h5>
+					<h5 class="modal-title">message to <span class="message-friendname">{{ friendName }}</span></h5>
 				</div>
 				<div class="modal-body  messages-body">
 					<div class="container-fluid">

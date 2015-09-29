@@ -18,8 +18,12 @@ exports.getUserNotif = function (req, res) {
 }
 
 exports.setNotifAsReaded = function (req, res) {
-	var id = req.query.id;
-	Notification.readNotification(id, function (err, notif) {
+	// var id = req.body.id;
+	var friend = req.body.friend;
+	console.log(friend);
+	var user = req.body.user;
+	console.log(user);
+	Notification.readNotification(friend, user, function (err, notif) {
 		if (err) {
 			res.json(err);
 		}

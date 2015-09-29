@@ -88,3 +88,7 @@ galleryService.service('Lightbox', function () {
 	this.originalImgX = 0;
 	this.originalImgY = 0;
 });
+
+galleryService.service('ViewMsg', function() {
+	this.viewMsg = false;
+});

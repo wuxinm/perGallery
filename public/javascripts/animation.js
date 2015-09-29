@@ -124,6 +124,31 @@ galleryAnimations.animation('.light-image', ['Lightbox', function (Lightbox) {
 	}	
 }]);
 
+galleryAnimations.animation('.drawing-mode-options', function() {
+	return {
+		addClass: function (element, className, done) {
+			if (className === 'editing') {
+				element.animate({
+					bottom: 50,
+					opacity: 1
+				}, 500, done);
+			} else {
+				done();
+			};
+		},
+		removeClass: function (element, className, done) {
+			if (className === 'editing') {
+				element.animate({
+					bottom: -140,
+					opacity: 0
+				}, 500, done);
+			} else {
+				done();
+			};
+		}
+	}
+});
+
 galleryAnimations.animation('.view-slide-in', function () {
 	return {
 		enter: function (element, done) {

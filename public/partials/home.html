@@ -55,7 +55,7 @@
 			<div class="btn-group dropup notif-button">
 				<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-click=""><span class="glyphicon glyphicon-envelope"></span>Notifications<span class="badge" style="margin-left: 5px">{{ notifQueue.length }}</span></button>
 				<ul class="dropdown-menu">
-					<li ng-repeat="notif in notifQueue"><a href="#">{{ notif.message }}</a></li>
+					<li ng-repeat="notif in notifQueue"><a ng-show="notif.category === 'msg'" ng-click="jumpToMsg(notif.user, notif.friend)">You've got message from <span class="message-from">{{ notif.user }}</span></a></li>
 				</ul>
 			</div>
 			<button type="button" class="btn btn-info" ng-click="showFriends()"><span class="glyphicon glyphicon-user"></span>Friends</button>

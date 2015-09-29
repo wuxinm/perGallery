@@ -1,3 +1,4 @@
+/* global fabric */
 /* global io */
 /// <reference path="../../typings/angularjs/angular.d.ts"/>
 /* global LoggedIn */
@@ -6,16 +7,16 @@
 var galleryControllers = angular.module('galleryControllers', []);
 
 galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$window', '$location',
-	'MainImageService', 'SearchUserService', 'AddFriendService', 'NotificationService',
+	'ViewMsg', 'MainImageService', 'SearchUserService', 'AddFriendService', 'NotificationService',
 	function ($scope, $timeout, $interval, $window, $location,
-		MainImageService, SearchUserService, AddFriendService, NotificationService) {
+		ViewMsg, MainImageService, SearchUserService, AddFriendService, NotificationService) {
 		//Profile Label
 		$scope.userProfilePhoto = LoggedIn.userPhoto;
 		$scope.userName = LoggedIn.name;
 		$scope.userLocation = LoggedIn.location;
 		$scope.userDescription = LoggedIn.description;
 		$scope.userFriendList = LoggedIn.friends;
-		
+
 		$scope.emptyGalleryAlert = true;
 		// enable slider mode by 1, disable by 0
 		$scope.sliderMode = 0;
@@ -42,37 +43,37 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 		
 		// notification queue
 		$scope.notifQueue = [];
-		
+
 		var socket = io.connect();
-		socket.on('private message', function(data) {
+		socket.on('private message', function (data) {
 			if (data.friend === LoggedIn.name) {
 				$scope.notifQueue.push(data);
+				NotificationService.read({ username: LoggedIn.name, friend: data.friend, user: data.user });
 			}
 		});
-		
+
 		NotificationService.query({
 			username: LoggedIn.name
 		}, function (data) {
 			if (data.length !== 0) {
-				data.forEach(function(notif) {
+				data.forEach(function (notif) {
 					if (!notif.readed) {
-						$scope.notifQueue.push(notif);	
+						$scope.notifQueue.push(notif);
 					}
 				}, this);
 			}
 		});
-		
+
 		MainImageService.query({
 			username: LoggedIn.name
 		}, function (data) {
 			if (data.length !== 0) {
-				// console.log(data);
 				$scope.emptyGalleryAlert = false;
 				imageList = data;
 				for (var i = 0; i < 3; i++) {
 					$scope.mainImages.push(pickRandomImage(imageList));
 				};
-			$interval(mainImageAnimate, 5000);
+				$interval(mainImageAnimate, 5000);
 			}
 		});
 
@@ -116,12 +117,12 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 		$scope.showFriends = function () {
 			// $scope.homepageMode = -1;
 			if ($scope.homepageMode === 0) {
-				$timeout(function(){
+				$timeout(function () {
 					$scope.homepageMode = 1;
 					// console.log($scope.userFriendList)
 				}, 500);
 			} else if ($scope.homepageMode === 1) {
-				$timeout(function(){
+				$timeout(function () {
 					$scope.homepageMode = 0;
 					// console.log($scope.userFriendList)
 				}, 500);
@@ -134,15 +135,15 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 			// $scope.searching = true;
 			if (value.length > minSearchLength) {
 				if (searchTimer) {
-	              $timeout.cancel(searchTimer);
-	            }
-				
+					$timeout.cancel(searchTimer);
+				}
+
 				searchTimer = $timeout(function () {
 					usersGetRequest(value);
 				}, 300);
 			}
 		}
-		
+
 		function usersGetRequest(str) {
 			SearchUserService.query({
 				username: LoggedIn.name,
@@ -155,23 +156,29 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 		}
 		// add one friend to friend list
 		$scope.addToFriend = function (friend) {
-			AddFriendService.update({username: LoggedIn.name}, friend);
+			AddFriendService.update({ username: LoggedIn.name }, friend);
 			$scope.userFriendList.push(friend);
 		}
-		
+
 		$scope.clearInput = function () {
 			$scope.searchingStr = '';
 			clearSearchResults($scope.results);
 		}
-		
+
 		function clearSearchResults(results) {
 			results.splice(0, results.length);
 		}
-		
-		$scope.jumpToFriendPage = function(friendName) {
+
+		$scope.jumpToFriendPage = function (friendName) {
 			$location.path('/home/friend/' + friendName);
 		}
-		
+
+		$scope.jumpToMsg = function (friendName, username) {
+			ViewMsg.viewMsg = true;
+			NotificationService.read({ username: LoggedIn.name, friend: friendName, user: username });
+			$location.path('/home/friend/' + friendName);
+		}
+
 	}
 ]);
 
@@ -197,7 +204,7 @@ galleryControllers.controller('UploadCtrl', ['$scope', '$timeout', 'Upload',
 
 		// add images to preview panel
 
-		function readImages (imgFiles) {
+		function readImages(imgFiles) {
 			for (var i = 0; i < imgFiles.length; i++) {
 				var image = imgFiles[i]
 				image.selected = false;
@@ -211,8 +218,8 @@ galleryControllers.controller('UploadCtrl', ['$scope', '$timeout', 'Upload',
 		}
 
 		$scope.selectUploadQueue = function (file) {
-			if($scope.editing) {
-				if(!file.img.selected) {
+			if ($scope.editing) {
+				if (!file.img.selected) {
 					file.img.selected = true;
 					$scope.removeUploadQueue.push(file.img);
 				}
@@ -235,8 +242,8 @@ galleryControllers.controller('UploadCtrl', ['$scope', '$timeout', 'Upload',
 		$scope.finishUploadQueue = function () {
 			$scope.editing = false;
 			// removeSelectedImg();
-			if($scope.removeUploadQueue !== null) {
-				$scope.removeUploadQueue.forEach(function(img) {
+			if ($scope.removeUploadQueue !== null) {
+				$scope.removeUploadQueue.forEach(function (img) {
 					img.selected = false;
 				});
 				$scope.removeUploadQueue.splice(0, $scope.removeUploadQueue.length);
@@ -263,11 +270,11 @@ galleryControllers.controller('UploadCtrl', ['$scope', '$timeout', 'Upload',
 					updateProgress($scope.rotate_engle);
 				});
 
-				$scope.uploadQueue.upload.success(function(data, status, headers, config) {
+				$scope.uploadQueue.upload.success(function (data, status, headers, config) {
 					$scope.uploadQueue.splice(0, $scope.uploadQueue.length);
 					// $scope.uploading = false;
 					console.log(data);
-				});	
+				});
 			}
 		}
 
@@ -275,7 +282,7 @@ galleryControllers.controller('UploadCtrl', ['$scope', '$timeout', 'Upload',
 			$scope.uploading = false;
 		}
 
-		function updateProgress (num) {
+		function updateProgress(num) {
 			if (num <= 180) {
 				angular.element('.right').css('transform', 'rotate(' + num + 'deg)');
 			}
@@ -290,7 +297,7 @@ galleryControllers.controller('UploadCtrl', ['$scope', '$timeout', 'Upload',
 
 // ---------------------- GALLERY PAGE CONTROLLER ---------------------------------
 
-galleryControllers.controller('GalleryCtrl', ['$scope', '$route' ,'$window', '$location', '$animate', 'GalleryService', 
+galleryControllers.controller('GalleryCtrl', ['$scope', '$route', '$window', '$location', '$animate', 'GalleryService',
 	'Lightbox', 'FavouritePhotoService', 'ShowFavouriteService', 'RemoveImageService',
 	function ($scope, $route, $window, $location, $animate, GalleryService, Lightbox, FavouritePhotoService
 		, ShowFavouriteService, RemoveImageService) {
@@ -313,24 +320,24 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route' ,'$window', '$l
 				skip += 30;
 			});
 		}
-		
+
 		$scope.loadMoreImgs();
-		
+
 		$scope.searchImgs = function () {
 			$scope.gallerySearching = true;
 		}
-		
+
 		$scope.clearInput = function () {
 			$scope.searchingStr = '';
 		}
-		
+
 		$scope.stopSearch = function () {
 			$scope.gallerySearching = false;
 		}
 
 		$scope.showImg = function (image, $event) {
 			Lightbox.lightboxWidth = $window.innerWidth * 0.6;
-			Lightbox.lightboxHeight = Lightbox.lightboxWidth/1.6;
+			Lightbox.lightboxHeight = Lightbox.lightboxWidth / 1.6;
 			Lightbox.lightboxX = $window.innerWidth * 0.2;
 			Lightbox.originalImgX = angular.element($event.target).prop('x');
 			Lightbox.originalImgY = angular.element($event.target).prop('y');
@@ -348,11 +355,11 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route' ,'$window', '$l
 		$scope.closeLight = function () {
 			$scope.imgSelected = false;
 		}
-		
+
 		$scope.addToFavourite = function () {
-			FavouritePhotoService.update({username: LoggedIn.name}, $scope.lightImg);
+			FavouritePhotoService.update({ username: LoggedIn.name }, $scope.lightImg);
 		}
-		
+
 		$scope.showAllImgs = function () {
 			$scope.allphotos = true;
 			$scope.galleryQueue.splice(0, $scope.galleryQueue.length);
@@ -367,7 +374,7 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route' ,'$window', '$l
 				skip += 30;
 			});
 		}
-		
+
 		$scope.showFavourites = function () {
 			$scope.allphotos = false;
 			$scope.galleryQueue.splice(0, $scope.galleryQueue.length);
@@ -379,22 +386,22 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route' ,'$window', '$l
 				}
 			});
 		}
-		
+
 		$scope.removeImgAlert = function () {
 			angular.element('#removeAlert').show();
 		}
-		
+
 		$scope.removeImgAlertCancel = function () {
 			angular.element('#removeAlert').hide();
 		}
-		
+
 		$scope.removeImg = function () {
 			RemoveImageService.delete({
-				username: LoggedIn.name, 
+				username: LoggedIn.name,
 				name: $scope.lightImg.name,
 			}, function (data) {
 				// $location.path('/gallery');
-				$route.reload(); 
+				$route.reload();
 			});
 		}
 	}
@@ -403,84 +410,228 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route' ,'$window', '$l
 /**    
  ********************* Friend Page Controller *************************
  */
- 
- galleryControllers.controller('FriendPageCtrl', ['$scope', '$route', '$routeParams', '$location',
-	 'GetFriendInfoService', 'GetFriendPhotoService', 'GetFriendMessageService',
-	 function ($scope, $route, $routeParams, $location
-		 , GetFriendInfoService, GetFriendPhotoService, GetFriendMessageService) {
-			 
+
+galleryControllers.controller('FriendPageCtrl', ['$scope', '$route', '$routeParams', '$location',
+	 'ViewMsg', 'GetFriendInfoService', 'GetFriendPhotoService', 'GetFriendMessageService', 'NotificationService',
+	 function ($scope, $route, $routeParams, $location,
+		ViewMsg, GetFriendInfoService, GetFriendPhotoService, GetFriendMessageService, NotificationService) {
+
 		$scope.galleryQueue = [];
 		$scope.messages = [];
-		$scope.friend = $routeParams.friendname;
+		// $scope.friend = $routeParams.friendname;
 		var messageContent = "";
 		var msg_each = "";
 
 		var socket = io.connect();
-		socket.on('private message', function(data) {
+		socket.on('private message', function (data) {
 			if (data.friend === LoggedIn.name) {
 				newFriendMessage(data);
+				// NotificationService.read({username: LoggedIn.name, friend: friendName});
 			}
 		});
-		
-		 GetFriendInfoService.query({
-			 username: LoggedIn.name,
-			 friendname: $routeParams.friendname
-		 }, function (friend) {
-			 $scope.friendProfilePhoto = friend[0].profilePhotoUrl.replace('_normal', '_400x400');
-			 $scope.friendName = friend[0].name;
-			 $scope.friendLocation = friend[0].location;
-			 $scope.friendDescription = friend[0].description;
-		 });
 
-		 GetFriendPhotoService.query({
-			 username: LoggedIn.name,
-			 friendname: $routeParams.friendname
-		 }, function (photos) {
-			 for (var i = 0; i < photos.length; i++) {
-				 $scope.galleryQueue.push(photos[i]);
-			 }
-		 });
-		 
-		 $scope.messageDialog = function () {
-			 angular.element('.message-content').empty();
-			 messageContent = "";
-			 GetFriendMessageService.query({
-				 username: LoggedIn.name,
-			 	 friendname: $routeParams.friendname
-			 }, function (messages) {
-				 messages.forEach(function(msg) {
-					 if (msg.user === LoggedIn.name && msg.friend === $routeParams.friendname) {
-						 msg_each = '<li class="col-xs-12"><div class="tooltip user-message col-xs-5 col-xs-offset-6" role="tooltip"><div class="tooltip-inner">' + msg.message 
-						 + '</div></div><span class="col-xs-1"><img class="img-circle" width="45px" height="45px" src="' + LoggedIn.userPhoto + '"></span></li>'
-					 } else {
-						 msg_each = '<li class="col-xs-12"><span class="col-xs-1"><img class="img-circle" width="45px" height="45px" src="' + $scope.friendProfilePhoto 
-						 + '"></span><div class="tooltip friend-message col-md-5 col-xs-9" role="tooltip"><div class="tooltip-inner">' + msg.message + '</div></div></li>'
-					 }
-					 messageContent = messageContent.concat(msg_each);
-				 }, this);
-				 angular.element('.message-content').append(messageContent);
-				 var messageBody = angular.element('.message-body');
-				 messageBody.scrollTop(messageBody.scrollHeight);
-				 console.log(messageBody.scscrollHeight);
-			 });
-		 }
-		 
-		 $scope.sendMessage = function (message) {
-			 var date = Date();
-			 var msg = { message: message, date: date, user: LoggedIn.name, friend: $routeParams.friendname };
-			 newUserMessage(msg);
-			 socket.emit('message', msg);
-			 $scope.messageInput = "";
-		 }
-		 
-		 function newUserMessage (msg) {
-			 msg_each = '<li class="col-xs-12"><div class="tooltip user-message col-xs-5 col-xs-offset-6" role="tooltip"><div class="tooltip-inner">' + msg.message + '</div></div><span class="col-xs-1"><img class="img-circle" width="45px" height="45px" src="' + LoggedIn.userPhoto + '"></span></li>'
-			 angular.element('.message-content').append(msg_each);
-		 }
-		 
-		 function newFriendMessage (msg) {
-			 msg_each = '<li class="col-xs-12"><span class="col-xs-1"><img class="img-circle" width="45px" height="45px" src="' + $scope.friendProfilePhoto + '"></span><div class="tooltip friend-message col-xs-5" role="tooltip"><div class="tooltip-inner">' + msg.message + '</div></div></li>'
-			 angular.element('.message-content').append(msg_each);
-		 }
-	 }
+		$scope.messageDialog = function () {
+			angular.element('.message-content').empty();
+			messageContent = "";
+			GetFriendMessageService.query({
+				username: LoggedIn.name,
+				friendname: $routeParams.friendname
+			}, function (messages) {
+				messages.forEach(function (msg) {
+					if (msg.user === LoggedIn.name && msg.friend === $routeParams.friendname) {
+						msg_each = '<li class="col-xs-12"><div class="tooltip user-message col-xs-5 col-xs-offset-6" role="tooltip"><div class="tooltip-inner">' + msg.message
+						+ '</div></div><span class="col-xs-1"><img class="img-circle" width="45px" height="45px" src="' + LoggedIn.userPhoto + '"></span></li>'
+					} else {
+						msg_each = '<li class="col-xs-12"><span class="col-xs-1"><img class="img-circle" width="45px" height="45px" src="' + $scope.friendProfilePhoto
+						+ '"></span><div class="tooltip friend-message col-md-5 col-xs-9" role="tooltip"><div class="tooltip-inner">' + msg.message + '</div></div></li>'
+					}
+					messageContent = messageContent.concat(msg_each);
+				}, this);
+				angular.element('.message-content').append(messageContent);
+				var messageBody = angular.element('.message-body');
+				messageBody.scrollTop(messageBody.scrollHeight);
+				// console.log(messageBody.scscrollHeight);
+			});
+		}
+
+		$scope.sendMessage = function (message) {
+			var date = Date();
+			var msg = { message: message, date: date, user: LoggedIn.name, friend: $routeParams.friendname };
+			newUserMessage(msg);
+			socket.emit('message', msg);
+			$scope.messageInput = "";
+		}
+
+		GetFriendInfoService.query({
+			username: LoggedIn.name,
+			friendname: $routeParams.friendname
+		}, function (friend) {
+			$scope.friendProfilePhoto = friend[0].profilePhotoUrl.replace('_normal', '_400x400');
+			$scope.friendName = friend[0].name;
+			$scope.friendLocation = friend[0].location;
+			$scope.friendDescription = friend[0].description;
+			if (ViewMsg.viewMsg) {
+				$scope.messageDialog();
+				angular.element('#messageModal').modal('show');
+				ViewMsg.viewMsg = false;
+			}
+		});
+
+		GetFriendPhotoService.query({
+			username: LoggedIn.name,
+			friendname: $routeParams.friendname
+		}, function (photos) {
+			for (var i = 0; i < photos.length; i++) {
+				$scope.galleryQueue.push(photos[i]);
+			}
+		});
+
+
+		function newUserMessage(msg) {
+			msg_each = '<li class="col-xs-12"><div class="tooltip user-message col-xs-5 col-xs-offset-6" role="tooltip"><div class="tooltip-inner">' + msg.message + '</div></div><span class="col-xs-1"><img class="img-circle" width="45px" height="45px" src="' + LoggedIn.userPhoto + '"></span></li>'
+			angular.element('.message-content').append(msg_each);
+		}
+
+		function newFriendMessage(msg) {
+			msg_each = '<li class="col-xs-12"><span class="col-xs-1"><img class="img-circle" width="45px" height="45px" src="' + $scope.friendProfilePhoto + '"></span><div class="tooltip friend-message col-xs-5" role="tooltip"><div class="tooltip-inner">' + msg.message + '</div></div></li>'
+			angular.element('.message-content').append(msg_each);
+		}
+		
+		$scope.jumpToEditPage = function (image) {
+			$location.path('/home/friend/' + $routeParams.friendname + '/editing/' + image.img._id);
+		}
+	}
+]);
+
+galleryControllers.controller('EditImageCtrl', ['$scope', '$route', '$routeParams', '$location', '$window',
+	function ($scope, $route, $routeParams, $location, $window) {
+		
+		$scope.brushWidth = 5; //default brush width
+		$scope.brushColor = '#00ff00'; //default brush color
+		$scope.imgEditing = false;
+		
+		//initiate canvas
+		var canvas = new fabric.Canvas('c', {
+			isDrawingMode: true
+		});
+		canvas.freeDrawingBrush = new fabric['PencilBrush'](canvas);
+		canvas.freeDrawingBrush.color = $scope.brushColor;
+		canvas.freeDrawingBrush.width = $scope.brushWidth;
+		// fabric.Image.fromURL('../uploads/mediumThumbnails/13e43ee756098bd38dacc08b49625278.jpg', function(oImg) {
+		// 	oImg.scale(0.5);
+		// 	canvas.add(oImg);
+		// });
+		var src = '../uploads/mediumThumbnails/26768c5204486bcc5ac1c8511e3ec085.JPG';
+		var img = new Image();
+		img.src = src;
+		console.log(img.width);
+		canvas.setWidth(img.width/2);
+		canvas.setHeight(img.height/2);
+		canvas.setBackgroundImage(src, canvas.renderAll.bind(canvas), {
+			// originX: 'center'
+			scaleX: 0.5,
+			scaleY: 0.5
+		});
+		
+		var hLinePatternBrush = new fabric.PatternBrush(canvas);
+    hLinePatternBrush.getPatternSrc = function() {
+
+      var patternCanvas = fabric.document.createElement('canvas');
+      patternCanvas.width = patternCanvas.height = 10;
+      var ctx = patternCanvas.getContext('2d');
+
+      ctx.strokeStyle = this.color;
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(5, 0);
+      ctx.lineTo(5, 10);
+      ctx.closePath();
+      ctx.stroke();
+
+      return patternCanvas;
+    };
+		
+		var squarePatternBrush = new fabric.PatternBrush(canvas);
+    squarePatternBrush.getPatternSrc = function() {
+
+      var squareWidth = 10, squareDistance = 2;
+
+      var patternCanvas = fabric.document.createElement('canvas');
+      patternCanvas.width = patternCanvas.height = squareWidth + squareDistance;
+      var ctx = patternCanvas.getContext('2d');
+
+      ctx.fillStyle = this.color;
+      ctx.fillRect(0, 0, squareWidth, squareWidth);
+
+      return patternCanvas;
+    };
+
+    var diamondPatternBrush = new fabric.PatternBrush(canvas);
+    diamondPatternBrush.getPatternSrc = function() {
+
+      var squareWidth = 10, squareDistance = 5;
+      var patternCanvas = fabric.document.createElement('canvas');
+      var rect = new fabric.Rect({
+        width: squareWidth,
+        height: squareWidth,
+        angle: 45,
+        fill: this.color
+      });
+
+      var canvasWidth = rect.getBoundingRectWidth();
+
+      patternCanvas.width = patternCanvas.height = canvasWidth + squareDistance;
+      rect.set({ left: canvasWidth / 2, top: canvasWidth / 2 });
+
+      var ctx = patternCanvas.getContext('2d');
+      rect.render(ctx);
+
+      return patternCanvas;
+    };
+		
+		$scope.clearCanvas = function () {
+			canvas.clear();
+		}
+		
+		$scope.changeBrushColor = function (color) {
+			canvas.freeDrawingBrush.color = color.brushColor;
+		}
+		
+		$scope.changeBrushWidth = function (width) {
+			canvas.freeDrawingBrush.width = parseInt(width.brushWidth, 10) || 1;
+		}
+		
+		angular.element('#drawing-mode-selector').on('change', function() {
+			var mode = this.value;
+				if (mode === 'hline') {
+				canvas.freeDrawingBrush = hLinePatternBrush;
+			} else if (mode === 'square') {
+				canvas.freeDrawingBrush = squarePatternBrush;
+			} else if (mode === 'diamond') {
+				canvas.freeDrawingBrush = diamondPatternBrush;
+			} else {
+				canvas.freeDrawingBrush = new fabric[mode + 'Brush'](canvas);
+			}
+			canvas.freeDrawingBrush.color = $scope.brushColor;
+			canvas.freeDrawingBrush.width = $scope.brushWidth;
+		});
+		
+		$scope.showEditOptions = function () {
+			if (!$scope.imgEditing) {
+				$scope.imgEditing = true;
+			} else {
+				$scope.imgEditing = false;
+			}
+		}
+		
+		$scope.saveCanvas = function (e) {
+			var a = canvas.toDataURL({
+        format: 'jpg',
+        quality: 0.2
+			});
+			// var a = canvas.toObject();
+			console.log(a);
+			this.download = 'test.png'
+		}
+	}
 ]);
