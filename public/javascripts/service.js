@@ -1,20 +1,42 @@
+/* global api */
 var galleryService = angular.module('galleryService', []);
 
 galleryService.factory('MainImageService', ['$resource',
 	function ($resource) {
-		return $resource('/:username/home', {}, {});
+		return $resource(api.get_all_photos, {}, {});
+	}
+]);
+
+galleryService.factory('ImgCommentService', ['$resource',
+	function ($resource) {
+		return $resource(api.img_comment_req, { username: '@username' }, 
+		{
+			'addComment': { method: 'PUT' }
+		});
+	}
+]);
+
+galleryService.factory('SentImgCommentService', ['$resource',
+	function ($resource) {
+		return $resource(api.sent_img_comment, {}, {});
+	}
+]);
+
+galleryService.factory('RecImgCommentService', ['$resource',
+	function ($resource) {
+		return $resource(api.receivced_img_comment, {}, {});
 	}
 ]);
 
 galleryService.factory('SearchUserService', ['$resource',
 	function ($resource) {
-		return $resource('/:username/home/friends/search', {}, {});
+		return $resource(api.search_friend, {}, {});
 	}
 ]);
 
 galleryService.factory('AddFriendService', ['$resource',
 	function ($resource) {
-		return $resource('/:username/home/friends/addFriend', { username: '@username'}, 
+		return $resource(api.add_friend, { username: '@username'}, 
 		{
 			'update': { method: 'PUT' }
 		});
@@ -23,7 +45,7 @@ galleryService.factory('AddFriendService', ['$resource',
 
 galleryService.factory('NotificationService', ['$resource',
 	function ($resource) {
-		return $resource('/:username/home/notification', { username: '@username'}, 
+		return $resource(api.notification, { username: '@username'}, 
 		{
 			'read': { method: 'PUT' }
 		});
@@ -32,31 +54,39 @@ galleryService.factory('NotificationService', ['$resource',
 
 galleryService.factory('GetFriendInfoService', ['$resource',
 	function ($resource) {
-		return $resource('/:username/home/friendInfo', { username: '@username'}, {});
+		return $resource(api.get_friend_info, { username: '@username'}, {});
 	}
 ]);
 
 galleryService.factory('GetFriendPhotoService', ['$resource',
 	function ($resource) {
-		return $resource('/:username/home/friend/:friendname', { username: '@username', friendname: '@friendname'}, {});	
+		return $resource(api.get_friend_photos, { username: '@username', friendname: '@friendname'}, {});	
 	}
 ]);
 
 galleryService.factory('GetFriendMessageService', ['$resource',
 	function ($resource) {
-		return $resource('/:username/home/friend/:friendname/messages', { username: '@username', friendname: '@friendname'}, {});	
+		return $resource(api.get_friend_msg, { username: '@username', friendname: '@friendname'}, {});	
+	}
+]);
+
+galleryService.factory('EditPhotoService', ['$resource',
+	function ($resource) {
+		return $resource(api.editing_friend_photo, {
+			username: '@username', friendname: '@friendname', photo_id: '@photo_id'
+		}, {});	
 	}
 ]);
 
 galleryService.factory('GalleryService', ['$resource', 
 	function ($resource) {
-		return $resource('/:username/gallery', {}, {});
+		return $resource(api.get_user_photos, {}, {});
 	}
 ]);
 
 galleryService.factory('FavouritePhotoService', ['$resource',
 	function ($resource) {
-		return $resource('/:username/gallery/addToFavourite', { username: '@username'}, 
+		return $resource(api.add_fav, { username: '@username'}, 
 			{
 				'update': { method: 'PUT' }
 			});
@@ -65,13 +95,13 @@ galleryService.factory('FavouritePhotoService', ['$resource',
 
 galleryService.factory('ShowFavouriteService', ['$resource',
 	function ($resource) {
-		return $resource('/:username/gallery/showFavourites', {}, {});
+		return $resource(api.show_fav, {}, {});
 	}
 ]);
 
 galleryService.factory('RemoveImageService', ['$resource', 
 	function ($resource) {
-		return $resource('/:username/gallery/removeImage/:name', { 
+		return $resource(api.del_photo, { 
 			username: '@username', name: 'name'
 		}, {});
 	}
@@ -81,7 +111,7 @@ galleryService.service('Lightbox', function () {
 	this.lightboxWidth = 0;
 	this.lightboxHeight = 0;
 	this.lightboxX = 0;
-	this.lightboxY = 75;
+	this.lightboxY = 60;
 
 	this.originalImgWidth = 0;
 	this.originalImgHeight = 0;

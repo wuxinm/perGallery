@@ -11,9 +11,10 @@ html(lang="en" ng-app="perGallery")
 		script.
 			var LoggedIn = JSON.parse('!{ JSON.stringify(user).replace(/\n/g, "\\n")}')
 				LoggedIn.userPhoto = LoggedIn.profilePhotoUrl.replace("_normal", "_400x400")
-
+			
 		script(src='javascripts/jquery-1.11.1.min.js')
 		script(src='javascripts/bootstrap.min.js')
+		script(src='config.js')
 		script(src='javascripts/angular.js')
 		script(src='javascripts/angular-route.js')
 		script(src='javascripts/angular-resource.js')

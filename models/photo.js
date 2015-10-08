@@ -27,9 +27,9 @@ var PhotoSchema = new Schema({
 		mediumThumb: { type: String, default: ''}
 	},
 	favourite: { type: Boolean, default: false },
-	comments: { type: Array, default: [] },
+	commentImgs: { type: Array, default: [] },
 	tags: { type: [], get: getTags, set: setTags },
-	uploadAt: { type: Date, default: Date.now }
+	uploadAt: { type: Date, default: '' }
 });
 
 // create new photo
@@ -60,9 +60,15 @@ PhotoSchema.statics.randomPhoto = function (username, callback) {
 	this.count(function (err, count) {
 		if (err) return callback(err);
 		var rand = Math.floor(Math.random() * count);
+		
 		this.findOne({ username : username }).skip(rand).exec(callback);
 	}.bind(this));
 };
+
+// select one photo from photos collection
+PhotoSchema.statics.getPhoto = function (id, callback) {
+	this.find({ _id: id }, callback);
+}
 
 // select all the photos from photos collection
 PhotoSchema.statics.getAllPhotos = function (callback) {
@@ -90,5 +96,10 @@ PhotoSchema.statics.showFavourites = function (username, callback) {
 PhotoSchema.statics.removePhoto = function (photoName, callback) {
 	this.remove({ name: photoName }, callback);
 }
+
+// add img comment to corresponding img
+PhotoSchema.statics.addImgComment = function (id, img, callback) {
+	this.update({ _id: id }, { $push: { commentImgs: img } }, callback);
+} 
 
 mongoose.model('Photo', PhotoSchema);

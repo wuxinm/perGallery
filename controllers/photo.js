@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Photo = mongoose.model('Photo');
+var EditedImg = mongoose.model('EditedImg');
 var im = require('imagemagick');
 var fs = require('fs');
 
@@ -115,42 +116,83 @@ exports.addToFavouritePhoto = function (req, res) {
 }
 
 /** 
- * show favourite photos
- */
+* show favourite photos
+*/
+
+exports.showFavouritePhotos = function (req, res) {
+	var username = req.user.username;
+	Photo.showFavourites(username, function (err, photos) {
+		if (err) {
+			res.json(err);
+		}
+	//  console.log(photos);
+		res.json(photos);
+	});
+}
  
- exports.showFavouritePhotos = function (req, res) {
-	 var username = req.user.username;
-	 Photo.showFavourites(username, function (err, photos) {
-		 if (err) {
-			 res.json(err);
-		 }
-		//  console.log(photos);
-		 res.json(photos);
-	 });
- }
- 
- /**
-  * remove photo
-  */
-  
-  exports.removePhoto = function (req, res) {
-	  var photoName = req.params.name;
-	  var path = './public/uploads/' + photoName;
-	  var mediumThumbPath = './public/uploads/mediumThumbnails/' + photoName;
-	  var lowThumbPath = './public/uploads/lowThumbnails/' + photoName;
-	  var paths = [path, mediumThumbPath, lowThumbPath];
-	  var i = paths.length;
-	  Photo.removePhoto(photoName, function (err, photo) {
-		  paths.forEach(function(filepath){
-			  fs.unlink(filepath, function() {
-				  i --;
-				  if (err) {
-					  res.json(err)
-				  }
-				  else if (i <= 0) {
-					  res.send('all files removed');
-				  }
-			  });
-		  });
-	  });
-  }
+/**
+* remove photo
+*/
+
+exports.removePhoto = function (req, res) {
+	var photoName = req.params.name;
+	var path = './public/uploads/' + photoName;
+	var mediumThumbPath = './public/uploads/mediumThumbnails/' + photoName;
+	var lowThumbPath = './public/uploads/lowThumbnails/' + photoName;
+	var paths = [path, mediumThumbPath, lowThumbPath];
+	var i = paths.length;
+	Photo.removePhoto(photoName, function (err, photo) {
+		paths.forEach(function(filepath){
+			fs.unlink(filepath, function() {
+				i --;
+				if (err) {
+					res.json(err)
+				}
+				else if (i <= 0) {
+					res.send('all files removed');
+				}
+			});
+		});
+	});	
+}
+
+exports.getEditingPhoto = function (req, res) {
+	Photo.getPhoto(req.params.photo_id, function (err, photo) {
+		if (err) {
+			res.json(err);
+		} else {
+			res.json(photo);
+		}
+	});
+}
+
+exports.uploadEditedPhoto = function (req, res) {
+	var img = req.body.data;
+	var buffer = new Buffer(img, 'base64');
+	var storePath = __dirname.replace('controllers', 'public') + '/uploads/editedImgs/';
+	var photo_id = req.params.photo_id;
+	Photo.getPhoto(photo_id, function (err, photo) {
+		if (err) {
+			res.json(err);
+		} else {
+			fs.writeFile(storePath + photo[0].originalname + '_commentImg_' + photo[0].commentImgs.length + '.png', buffer, function (err) {
+				if (err) {
+					res.json(err)
+				} else {
+					var imgName = photo[0].originalname + '_commentImg_' + photo[0].commentImgs.length + '.png';
+					var imgPath = 'uploads/editedImgs/' + imgName;
+					EditedImg.createEditedImg(imgName, req.user.username, req.params.friendname, imgPath, function (err, img) {
+						Photo.addImgComment(photo_id, img, function (err, photo) {
+							console.log('hehe');
+							if (err) { res.json(err); }
+						});
+					}); 
+					// function (err, editedImg) {
+					// });
+					res.send('success');
+					console.log('done');
+				}
+			});
+		}
+	});
+}

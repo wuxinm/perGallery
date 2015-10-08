@@ -7,9 +7,11 @@
 var galleryControllers = angular.module('galleryControllers', []);
 
 galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$window', '$location',
-	'ViewMsg', 'MainImageService', 'SearchUserService', 'AddFriendService', 'NotificationService',
+	'ViewMsg', 'MainImageService', 'SearchUserService', 'AddFriendService', 'NotificationService', 
+	'SentImgCommentService',
 	function ($scope, $timeout, $interval, $window, $location,
-		ViewMsg, MainImageService, SearchUserService, AddFriendService, NotificationService) {
+		ViewMsg, MainImageService, SearchUserService, AddFriendService, NotificationService, 
+		SentImgCommentService) {
 		//Profile Label
 		$scope.userProfilePhoto = LoggedIn.userPhoto;
 		$scope.userName = LoggedIn.name;
@@ -43,6 +45,9 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 		
 		// notification queue
 		$scope.notifQueue = [];
+		
+		// feedback
+		$scope.feedback = 'Send feedback...';
 
 		var socket = io.connect();
 		socket.on('private message', function (data) {
@@ -62,6 +67,12 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 					}
 				}, this);
 			}
+		});
+		
+		SentImgCommentService.query({
+			username: LoggedIn.name
+		}, function (comments) {
+			$scope.imgComments = comments;
 		});
 
 		MainImageService.query({
@@ -168,7 +179,7 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 		function clearSearchResults(results) {
 			results.splice(0, results.length);
 		}
-
+		
 		$scope.jumpToFriendPage = function (friendName) {
 			$location.path('/home/friend/' + friendName);
 		}
@@ -177,6 +188,15 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 			ViewMsg.viewMsg = true;
 			NotificationService.read({ username: LoggedIn.name, friend: friendName, user: username });
 			$location.path('/home/friend/' + friendName);
+		}
+		
+		$scope.clearFeedbackInput = function (event) {
+			console.log(event);
+			event.target.defaultValue = '';
+			event.target.style.color = 'black';
+		}
+		
+		$scope.sendingFeedback = function (event) {
 		}
 
 	}
@@ -336,9 +356,9 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route', '$window', '$l
 		}
 
 		$scope.showImg = function (image, $event) {
-			Lightbox.lightboxWidth = $window.innerWidth * 0.6;
+			Lightbox.lightboxWidth = $window.innerWidth * 0.7;
 			Lightbox.lightboxHeight = Lightbox.lightboxWidth / 1.6;
-			Lightbox.lightboxX = $window.innerWidth * 0.2;
+			Lightbox.lightboxX = $window.innerWidth * 0.15;
 			Lightbox.originalImgX = angular.element($event.target).prop('x');
 			Lightbox.originalImgY = angular.element($event.target).prop('y');
 			Lightbox.originalImgWidth = angular.element($event.target).prop('width');
@@ -349,7 +369,9 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route', '$window', '$l
 			angular.element('#light-image').css('width', Lightbox.originalImgWidth);
 			angular.element('#light-image').css('height', Lightbox.originalImgHeight);
 			$scope.imgSelected = true;
-			$scope.lightImg = image.img;
+			$scope.originalImg =  image.img;
+			$scope.lightImgPath = image.img.thumbpath.mediumThumb;
+			$scope.lightImgComments = image.img.commentImgs;
 		}
 
 		$scope.closeLight = function () {
@@ -404,6 +426,10 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route', '$window', '$l
 				$route.reload();
 			});
 		}
+		
+		$scope.showImgComment = function (image) {
+			$scope.lightImgPath = image.img.path;
+		}
 	}
 ]);
 
@@ -437,6 +463,7 @@ galleryControllers.controller('FriendPageCtrl', ['$scope', '$route', '$routePara
 				username: LoggedIn.name,
 				friendname: $routeParams.friendname
 			}, function (messages) {
+				console.log(messages);
 				messages.forEach(function (msg) {
 					if (msg.user === LoggedIn.name && msg.friend === $routeParams.friendname) {
 						msg_each = '<li class="col-xs-12"><div class="tooltip user-message col-xs-5 col-xs-offset-6" role="tooltip"><div class="tooltip-inner">' + msg.message
@@ -450,7 +477,6 @@ galleryControllers.controller('FriendPageCtrl', ['$scope', '$route', '$routePara
 				angular.element('.message-content').append(messageContent);
 				var messageBody = angular.element('.message-body');
 				messageBody.scrollTop(messageBody.scrollHeight);
-				// console.log(messageBody.scscrollHeight);
 			});
 		}
 
@@ -504,15 +530,19 @@ galleryControllers.controller('FriendPageCtrl', ['$scope', '$route', '$routePara
 ]);
 
 galleryControllers.controller('EditImageCtrl', ['$scope', '$route', '$routeParams', '$location', '$window',
-	function ($scope, $route, $routeParams, $location, $window) {
+	'EditPhotoService',
+	function ($scope, $route, $routeParams, $location, $window, EditPhotoService) {
 		
 		$scope.brushWidth = 5; //default brush width
 		$scope.brushColor = '#00ff00'; //default brush color
 		$scope.imgEditing = false;
+		var friendname = $routeParams.friendname;
+		var photo_id = $routeParams.photo_id;
 		
 		//initiate canvas
 		var canvas = new fabric.Canvas('c', {
-			isDrawingMode: true
+			isDrawingMode: true,
+			allowTouchScrolling: true
 		});
 		canvas.freeDrawingBrush = new fabric['PencilBrush'](canvas);
 		canvas.freeDrawingBrush.color = $scope.brushColor;
@@ -521,73 +551,79 @@ galleryControllers.controller('EditImageCtrl', ['$scope', '$route', '$routeParam
 		// 	oImg.scale(0.5);
 		// 	canvas.add(oImg);
 		// });
-		var src = '../uploads/mediumThumbnails/26768c5204486bcc5ac1c8511e3ec085.JPG';
-		var img = new Image();
-		img.src = src;
-		console.log(img.width);
-		canvas.setWidth(img.width/2);
-		canvas.setHeight(img.height/2);
-		canvas.setBackgroundImage(src, canvas.renderAll.bind(canvas), {
-			// originX: 'center'
-			scaleX: 0.5,
-			scaleY: 0.5
+		EditPhotoService.query({
+			username: LoggedIn.name,
+			friendname: friendname,
+			photo_id: photo_id 
+		}, function (photo) {
+			var src = photo[0].thumbpath.mediumThumb;
+			var img = new Image();
+			img.src = src;
+			img.onload = function () {
+				canvas.setWidth(img.width/2);
+				canvas.setHeight(img.height/2);
+				canvas.setBackgroundImage(src, canvas.renderAll.bind(canvas), {
+					scaleX: 0.5,
+					scaleY: 0.5
+				});
+			}
 		});
 		
 		var hLinePatternBrush = new fabric.PatternBrush(canvas);
-    hLinePatternBrush.getPatternSrc = function() {
-
-      var patternCanvas = fabric.document.createElement('canvas');
-      patternCanvas.width = patternCanvas.height = 10;
-      var ctx = patternCanvas.getContext('2d');
-
-      ctx.strokeStyle = this.color;
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.moveTo(5, 0);
-      ctx.lineTo(5, 10);
-      ctx.closePath();
-      ctx.stroke();
-
-      return patternCanvas;
-    };
+			hLinePatternBrush.getPatternSrc = function() {
+			
+			var patternCanvas = fabric.document.createElement('canvas');
+			patternCanvas.width = patternCanvas.height = 10;
+			var ctx = patternCanvas.getContext('2d');
+			
+			ctx.strokeStyle = this.color;
+			ctx.lineWidth = 5;
+			ctx.beginPath();
+			ctx.moveTo(5, 0);
+			ctx.lineTo(5, 10);
+			ctx.closePath();
+			ctx.stroke();
+			
+			return patternCanvas;
+		};
 		
 		var squarePatternBrush = new fabric.PatternBrush(canvas);
-    squarePatternBrush.getPatternSrc = function() {
-
-      var squareWidth = 10, squareDistance = 2;
-
-      var patternCanvas = fabric.document.createElement('canvas');
-      patternCanvas.width = patternCanvas.height = squareWidth + squareDistance;
-      var ctx = patternCanvas.getContext('2d');
-
-      ctx.fillStyle = this.color;
-      ctx.fillRect(0, 0, squareWidth, squareWidth);
-
-      return patternCanvas;
-    };
-
-    var diamondPatternBrush = new fabric.PatternBrush(canvas);
-    diamondPatternBrush.getPatternSrc = function() {
-
-      var squareWidth = 10, squareDistance = 5;
-      var patternCanvas = fabric.document.createElement('canvas');
-      var rect = new fabric.Rect({
-        width: squareWidth,
-        height: squareWidth,
-        angle: 45,
-        fill: this.color
-      });
-
-      var canvasWidth = rect.getBoundingRectWidth();
-
-      patternCanvas.width = patternCanvas.height = canvasWidth + squareDistance;
-      rect.set({ left: canvasWidth / 2, top: canvasWidth / 2 });
-
-      var ctx = patternCanvas.getContext('2d');
-      rect.render(ctx);
-
-      return patternCanvas;
-    };
+			squarePatternBrush.getPatternSrc = function() {
+			
+			var squareWidth = 10, squareDistance = 2;
+			
+			var patternCanvas = fabric.document.createElement('canvas');
+			patternCanvas.width = patternCanvas.height = squareWidth + squareDistance;
+			var ctx = patternCanvas.getContext('2d');
+			
+			ctx.fillStyle = this.color;
+			ctx.fillRect(0, 0, squareWidth, squareWidth);
+			
+			return patternCanvas;
+		};
+		
+		var diamondPatternBrush = new fabric.PatternBrush(canvas);
+			diamondPatternBrush.getPatternSrc = function() {
+			
+			var squareWidth = 10, squareDistance = 5;
+			var patternCanvas = fabric.document.createElement('canvas');
+			var rect = new fabric.Rect({
+			width: squareWidth,
+			height: squareWidth,
+			angle: 45,
+			fill: this.color
+			});
+			
+			var canvasWidth = rect.getBoundingRectWidth();
+			
+			patternCanvas.width = patternCanvas.height = canvasWidth + squareDistance;
+			rect.set({ left: canvasWidth / 2, top: canvasWidth / 2 });
+			
+			var ctx = patternCanvas.getContext('2d');
+			rect.render(ctx);
+			
+			return patternCanvas;
+		};
 		
 		$scope.clearCanvas = function () {
 			canvas.clear();
@@ -624,14 +660,13 @@ galleryControllers.controller('EditImageCtrl', ['$scope', '$route', '$routeParam
 			}
 		}
 		
-		$scope.saveCanvas = function (e) {
-			var a = canvas.toDataURL({
-        format: 'jpg',
-        quality: 0.2
-			});
-			// var a = canvas.toObject();
-			console.log(a);
-			this.download = 'test.png'
+		$scope.saveCanvas = function () {
+			var imgBase64 = canvas.toDataURL().replace(/^data:image\/png;base64,/,'');
+			EditPhotoService.save({
+				username: LoggedIn.name,
+				friendname: friendname,
+				photo_id: photo_id 
+			}, {data: imgBase64});
 		}
 	}
 ]);

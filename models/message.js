@@ -5,6 +5,7 @@ var Schema = mongoose.Schema;
  * message from user to friend 
  */
 var MessageSchema = new Schema({
+	category: { type: String, default: '' },
 	message: { type: String, default: '' },
 	date: { type: String, default: '' },
 	user: { type: String, default: '' },

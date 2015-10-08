@@ -5,12 +5,19 @@ var photo = require('../controllers/photo');
 var user = require('../controllers/user');
 var message = require('../controllers/message');
 var notif = require('../controllers/notification');
+var editedImg = require('../controllers/editedImg');
+var api = require('../config/api');
 
 router.get('/auth/twitter', passport.authenticate('twitter'));
 router.get('/auth/twitter/callback', passport.authenticate('twitter', {
 	successRedirect: '/',
 	failureRedirect: '/login'
 }));
+
+router.get('/config.js', function (req, res) {
+	res.send('var api =' + JSON.stringify(api));
+});
+
 
 /* GET home page. */
 router.get('/', function (req, res) {
@@ -30,22 +37,26 @@ router.get('/logout', function (req, res) {
 	res.redirect('/');
 });
 
-router.get('/:username', user.getCurrentUser);
-router.get('/:username/home', photo.getAllPhotos);
-router.get('/:username/home/notification', notif.getUserNotif);
-router.put('/:username/home/notification', notif.setNotifAsReaded);
-router.get('/:username/home/friends/search', user.searchUser);
-router.put('/:username/home/friends/addFriend', user.addFriendtoDB);
+router.get(api.homepage, user.getCurrentUser);
+router.get(api.get_all_photos, photo.getAllPhotos);
+router.get(api.sent_img_comment, editedImg.getSentImgComments);
+router.get(api.received_img_comment, editedImg.getReceivedImgComments);
+router.get(api.notification, notif.getUserNotif);
+router.put(api.notification, notif.setNotifAsReaded);
+router.get(api.search_friend, user.searchUser);
+router.put(api.add_friend, user.addFriendtoDB);
 
-router.get('/:username/home/friendInfo', user.getFriendInfo);
-router.get('/:username/home/friend/:friendname', photo.getFriendPhotos);
-router.get('/:username/home/friend/:friendname/messages', message.getMessages);
+router.get(api.get_friend_info, user.getFriendInfo);
+router.get(api.get_friend_photos, photo.getFriendPhotos);
+router.get(api.get_friend_msg, message.getMessages);
+router.get(api.editing_friend_photo, photo.getEditingPhoto);
+router.post(api.editing_friend_photo, photo.uploadEditedPhoto);
 
-router.post('/:username/upload', photo.uploadPhotos);
+router.post(api.upload_photos, photo.uploadPhotos);
 
-router.get('/:username/gallery', photo.galleryPhotos);
-router.put('/:username/gallery/addToFavourite', photo.addToFavouritePhoto);
-router.get('/:username/gallery/showFavourites', photo.showFavouritePhotos);
-router.delete('/:username/gallery/removeImage/:name', photo.removePhoto);
+router.get(api.get_user_photos, photo.galleryPhotos);
+router.put(api.add_fav, photo.addToFavouritePhoto);
+router.get(api.show_fav, photo.showFavouritePhotos);
+router.delete(api.del_photo, photo.removePhoto);
 
 module.exports = router;

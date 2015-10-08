@@ -6034,11 +6034,11 @@ button.close {
   }
 }
 .tooltip {
-  position: absolute;
-  z-index: 1070;
+  /*position: absolute;*/
+  /*z-index: 1070;*/
   display: block;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   font-style: normal;
   font-weight: normal;
   line-height: 1.42857143;
@@ -6053,8 +6053,7 @@ button.close {
   word-wrap: normal;
   white-space: normal;
   filter: alpha(opacity=0);
-  opacity: 0;
-
+  opacity: 1;
   line-break: auto;
 }
 .tooltip.in {
