@@ -1,6 +1,6 @@
 <div class="editing-view row">
 	<div class="edit-container">
-		<canvas id="c" style="border: 1px solid black"></canvas>
+		<canvas id="c"></canvas>
 	</div>
 	<div id="drawing-mode-options" class="drawing-mode-options col-md-4 col-md-offset-4 col-xs-12"  ng-class="{editing: imgEditing}">
 		<label for="drawing-mode-selector">Mode:</label>
@@ -21,12 +21,33 @@
 		<span class="info">{{ brushWidth }}</span>
 		<input type="range" value="5" min="0" max="100" id="drawing-line-width" ng-change="changeBrushWidth(this)" ng-model="brushWidth" style="display: inline; width: 130px">
 		<br>
+	</div>
+	<div class="drawing-text-option col-md-4 col-md-offset-4 col-xs-12" ng-class="{addText: addText}">
+		<input type="text" class="col-xs-10" name="FirstName" value="Send feedback...">
+	</div>
+	<div id="editedAlert" class="alert alert-success alert-dismissible fade in" role="alert">
+		<h3>Edited Image Created ~!</h3>
+		<p>
+			<button type="button" class="btn btn-success" ng-click="editedBack()">Back</button>
+		</p>
 	</div>	
 	<div class="profile-bottom-bar">
 		<div class="profile-bottom-bar-buttons">
-			<button type="button" class="btn btn-info" ng-click="showEditOptions()"><span class="glyphicon glyphicon-search"></span>Edit Options</button>
+			<button type="button" class="btn btn-info" ng-click="showEditOptions()"><span class="glyphicon glyphicon-pencil"></span>Edit Options</button>
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="cutCanvas()"><span class="glyphicon glyphicon-scissors"></span>Cut Canvas</button>
 			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="clearCanvas()"><span class="glyphicon glyphicon-erase"></span>Clear</button>
-			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="saveCanvas(e)"><span class="glyphicon glyphicon-floppy-disk"></span>Save</button>
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="saveCanvas()"><span class="glyphicon glyphicon-floppy-disk"></span>Save</button>
 		</div>
 	</div>
+
+	<button id="canvas-cut-button1" class="canvas-cut-buttons" ng-show="cutting" ng-click="cutImg1()"><span class="glyphicon glyphicon-remove"></span></button>
+	<button id="canvas-cut-button2" class="canvas-cut-buttons" ng-show="cutting" ng-click="cutImg2()"><span class="glyphicon glyphicon-remove"></span></button>
+	<button id="canvas-cut-button3" class="canvas-cut-buttons" ng-show="cutting" ng-click="cutImg3()"><span class="glyphicon glyphicon-remove"></span></button>
+	<button id="canvas-cut-button4" class="canvas-cut-buttons" ng-show="cutting" ng-click="cutImg4()"><span class="glyphicon glyphicon-remove"></span></button>
+	<button id="canvas-cut-button5" class="canvas-cut-buttons" ng-show="cutting" ng-click="cutImg5()"><span class="glyphicon glyphicon-remove"></span></button>
+	<button id="canvas-cut-button6" class="canvas-cut-buttons" ng-show="cutting" ng-click="cutImg6()"><span class="glyphicon glyphicon-remove"></span></button>
+	<button id="canvas-cut-button7" class="canvas-cut-buttons" ng-show="cutting" ng-click="cutImg7()"><span class="glyphicon glyphicon-remove"></span></button>
+	<button id="canvas-cut-button8" class="canvas-cut-buttons" ng-show="cutting" ng-click="cutImg8()"><span class="glyphicon glyphicon-remove"></span></button>
+	<button id="canvas-cut-button9" class="canvas-cut-buttons" ng-show="cutting" ng-click="cutImg9()"><span class="glyphicon glyphicon-remove"></span></button>
+
 </div>

@@ -5,36 +5,49 @@ var Schema = mongoose.Schema;
  * message from user to friend 
  */
 var MessageSchema = new Schema({
-	category: { type: String, default: '' },
 	message: { type: String, default: '' },
 	date: { type: String, default: '' },
-	user: { type: String, default: '' },
-	friend: { type: String, default: '' }
+	from_user: { type: String, default: '' },
+	to_user: { type: String, default: '' },
+	imgMsg_path: { type: String, default: '' }
 });
 
 /**
- * create new message
+ * create new chat message
  */
-MessageSchema.statics.createMessage = function (data, callback) {
+MessageSchema.statics.createChatMessage = function (data, callback) {
 	 var newMessage = new this();
 	 newMessage.message = data.message;
 	 newMessage.date = data.date;
-	 newMessage.user = data.user;
-	 newMessage.friend = data.friend;
+	 newMessage.from_user = data.from_user;
+	 newMessage.to_user = data.to_user;
 	 newMessage.save();
 	 return newMessage;
- }
+}
+
+/**
+ * create new img message
+ */
+MessageSchema.statics.createImgMessage = function (data, callback) {
+	 var newMessage = new this();
+	 newMessage.imgMsg_path = data.img_path;
+	 newMessage.date = data.date;
+	 newMessage.from_user = data.from_user;
+	 newMessage.to_user = data.to_user;
+	 newMessage.save();
+	 return newMessage;
+}
+
+/**
+	* get friend's message records
+	*/
+MessageSchema.statics.getChatMessages = function (from_user, to_user, callback) {
+	this.find({$or: [{from_user: from_user, to_user: to_user }, {from_user: to_user, to_user: from_user}]}, callback);
+}
  
- /**
-  * get friend's message records
-  */
- MessageSchema.statics.getFriendMessages = function (user, friend, callback) {
-	 this.find({$or: [{user: user, friend: friend }, {user: friend, friend: user}]}, callback);
- }
- 
- /**
-  * clear friend's message records
-  */
+/**
+	* clear friend's message records
+	*/
 MessageSchema.statics.removeFriendMessages = function (user, friend, callback) {
 	 this.remove({ user: user, friend: friend }, callback);
 }

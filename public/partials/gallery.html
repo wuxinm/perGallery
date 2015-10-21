@@ -2,16 +2,19 @@
 	<div class="gallery-preview col-xs-12">
 		<div ng-repeat="img in galleryQueue | filter: searchingStr" class="gallery-img-preview col-xs-6 col-md-2" ng-click="showImg(this, $event)">
 			<img src="{{ img.thumbpath.lowThumb }}">
-			<div class="gallery-img-preview-mask">
-				<div class="gallery-img-preview-infobar">
-					<span class="glyphicon glyphicon-heart col-xs-4"></span>
-					<span class="glyphicon glyphicon-comment col-xs-4"><h6>12</h6></span>
-				</div>
-			</div>
+		</div>
+		<div ng-repeat="img in combineImgs | filter: searchingStr" class="gallery-img-preview col-xs-6 col-md-2" ng-click="showImg(this, $event)">
+			<img src="{{ img.path }}">
+		</div>
+		<div ng-repeat="video in videos | filter: searchingStr" class="gallery-img-preview col-xs-6 col-md-2" ng-click="">
+			<video controls>
+				<source src="{{ video.path }}" type="video/mp4">
+				Your browser does not support the video tag.
+			</video>
 		</div>
 		<div class="gallery-preview-overlay" ng-show="imgSelected"></div>
 		<div id="light-image" class="light-image" ng-show="imgSelected" ng-class="{show: imgSelected}">
-			<h4 style="margin-top:0px">{{ lightImg.originalname }}</h4>
+			<h4 style="margin-top:0px">{{ originalImg.originalname }}</h4>
 			<img src="{{ lightImgPath }}">
 			<div class="light-image-controller">
 				<span class="glyphicon glyphicon-remove remove-button" ng-click="closeLight()"></span>
@@ -35,9 +38,10 @@
 	<div class="gallery-bottom-bar">
 		<div class="gallery-bottom-bar-buttons" ng-show="!gallerySearching">
 			<button class="btn btn-info" ng-click="searchImgs()">search</button>
-		    <button class="btn btn-info" ng-click="loadMoreImgs()">load more</button>
+			<button class="btn btn-info" ng-click="searchVideo()">search</button>
+			<button class="btn btn-info" ng-click="loadMoreImgs()">load more</button>
 			<button class="btn btn-info" ng-click="showAllImgs()" ng-show="!allphotos">all photos</button>
-		    <button class="btn btn-info" ng-click="showFavourites()" ng-show="allphotos">favourite</button>
+			<button class="btn btn-info" ng-click="showFavourites()" ng-show="allphotos">favourite</button>
 		</div>
 		<div class="gallery-bottom-bar-search" ng-show="gallerySearching">
 			<div class="input-group">
@@ -49,4 +53,27 @@
 			</div>
 		</div>
   </div>
+	<div class="modal fade" id="videoModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h5 class="modal-title">Video from Youmeng3</h5>
+				</div>
+				<div class="modal-body editedImg-body">
+					<div class="container-fluid">
+						<div class="row">
+							<div class="combine-bg-imgs col-xs-3" ng-repeat="video in videos" ng-click="selectUserImg(this)">
+								<!--<img src="{{ img.thumbpath.lowThumb }}">-->
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" ng-click="addUserImage()">Choose BG</button>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>

@@ -16,6 +16,18 @@ galleryService.factory('ImgCommentService', ['$resource',
 	}
 ]);
 
+galleryService.factory('UploadCombineService', ['$resource',
+	function ($resource) {
+		return $resource(api.upload_combine_img, { username: '@username' }, {});
+	}
+]);
+
+galleryService.factory('GetCombineService', ['$resource',
+	function ($resource) {
+		return $resource(api.get_combine_img, { username: '@username' }, {});
+	}
+]);
+
 galleryService.factory('SentImgCommentService', ['$resource',
 	function ($resource) {
 		return $resource(api.sent_img_comment, {}, {});
@@ -47,7 +59,7 @@ galleryService.factory('NotificationService', ['$resource',
 	function ($resource) {
 		return $resource(api.notification, { username: '@username'}, 
 		{
-			'read': { method: 'PUT' }
+			'read': { method: 'POST' }
 		});
 	}	
 ]);
@@ -61,6 +73,18 @@ galleryService.factory('GetFriendInfoService', ['$resource',
 galleryService.factory('GetFriendPhotoService', ['$resource',
 	function ($resource) {
 		return $resource(api.get_friend_photos, { username: '@username', friendname: '@friendname'}, {});	
+	}
+]);
+
+galleryService.factory('LikeImgCommentService', ['$resource',
+	function ($resource) {
+		return $resource(api.like_img_comment, { 
+			username: '@username',
+			friendname: '@friendname',
+			img_comm_id: '@img_comm_id', 
+		}, {
+			'likeImg': { method: 'PUT' }
+		});
 	}
 ]);
 
@@ -81,6 +105,18 @@ galleryService.factory('EditPhotoService', ['$resource',
 galleryService.factory('GalleryService', ['$resource', 
 	function ($resource) {
 		return $resource(api.get_user_photos, {}, {});
+	}
+]);
+
+galleryService.factory('GalleryCombineService', ['$resource',
+	function ($resource) {
+		return $resource(api.gallery_combine_img, { username: '@username' }, {});
+	}
+]);
+
+galleryService.factory('GalleryVideoService', ['$resource',
+	function ($resource) {
+		return $resource(api.gallery_video, { username: '@username' }, {});
 	}
 ]);
 

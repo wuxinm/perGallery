@@ -19,19 +19,23 @@
 			<p>{{ friendDescription }}<span class="glyphicon glyphicon-certificate"></span></p>
 		</div>
 	</div>
-	<div ng-repeat="img in galleryQueue" class="gallery-img-preview col-xs-6 col-md-2" ng-click="jumpToEditPage(this)">
+	<div ng-repeat="img in galleryQueue" class="gallery-img-preview col-xs-6 col-md-2" ng-click="jumpToEditPage(this)" ng-show="friendPageModel === 0">
 		<img src="{{ img.thumbpath.lowThumb }}">
-		<div class="gallery-img-preview-mask">
-			<div class="gallery-img-preview-infobar">
-				<span class="glyphicon glyphicon-heart col-xs-4"></span>
-				<span class="glyphicon glyphicon-comment col-xs-4"><h6>12</h6></span>
-			</div>
-		</div>
+	</div>
+	<div ng-repeat="video in videos | filter: searchingStr" class="gallery-img-preview col-xs-6 col-md-2" ng-click="" ng-show="friendPageModel === 0">
+		<video controls>
+			<source src="{{ video.path }}" type="video/mp4">
+			Your browser does not support the video tag.
+		</video>
+	</div>
+	<div ng-repeat="comm in imgComments" class="gallery-img-preview col-xs-6 col-md-2" ng-click="showEditedImg(this)" ng-show="friendPageModel === 1">
+		<img src="{{ comm.path }}">
 	</div>
 	<div class="profile-bottom-bar">
 		<div class="profile-bottom-bar-buttons">
 			<button type="button" class="btn btn-info" ng-click="messageDialog()" data-toggle="modal" data-target="#messageModal"><span class="glyphicon glyphicon-send"></span>Message</button>
-			<button type="button" class="btn btn-info"><span class="glyphicon glyphicon-search"></span><a href="/#upload">Search</a></button>
+			<button type="button" class="btn btn-info" ng-click="friendSentImgComment()"><span class="glyphicon glyphicon-fire"></span>Image</button>
+			<button type="button" class="btn btn-info" ng-click="friendCombineImages()"><span class="glyphicon glyphicon-inbox"></span>Combine</button>
 		</div>
 	</div>
 	<div class="modal fade" id="messageModal">
@@ -41,7 +45,7 @@
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 					<h5 class="modal-title">message to <span class="message-friendname">{{ friendName }}</span></h5>
 				</div>
-				<div class="modal-body  messages-body">
+				<div class="modal-body messages-body">
 					<div class="container-fluid">
 						<div class="row">
 							<ul style="padding: 0px" class="message-content">
@@ -54,12 +58,45 @@
 						<div class="input-group">
 						<input class="form-control" placeholder="input message" ng-model="messageInput">
 						<span class="input-group-btn">
-				        	<button class="btn btn-default" type="button" ng-click="clearInput()"><span class="glyphicon glyphicon-remove-circle"></span></button>
+							<button class="btn btn-default" type="button" ng-click="clearInput()"><span class="glyphicon glyphicon-remove-circle"></span></button>
 							<button class="btn btn-success" style="margin: 0" type="button" ng-click="sendMessage(messageInput)"><span class="glyphicon glyphicon-send" style="padding-right: 10px"></span>send</button>
-				      	</span>
+						</span>
+					</div>
+				</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="friendImgModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h5 class="modal-title">EditedImg from <span class="editedImg-fromuser">{{ editedImg.from_user }}</span></h5>
+					<div class="likes">
+						<span class="likes-title">likes from </span>
+						<span class="likes-user" ng-repeat="user in editedImg.like_user">{{ user }}.</span>
+					</div>
+				</div>
+				<div class="modal-body editedImg-body">
+					<div class="container-fluid">
+						<div class="row">
+							<img class="" src="{{ editedImg.path }}">
 						</div>
 					</div>
-					<!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
+				</div>
+				<div class="modal-comments">
+					<ul class="comments-list">
+						<li ng-repeat="fb in editedImg.comments">
+							<span>{{ fb.from_user }}:</span>
+							<p>{{ fb.feedback }}</p>
+						</li>
+					</ul>
+				</div>
+				<div class="modal-footer comment-input">
+					<input id="comment-input" type="text" class="col-xs-10" name="FirstName" value="Send feedback..." ng-click="clearFeedbackInput()" ng-keyup="storeInputValue($event)">
+					<span class="glyphicon glyphicon-send" ng-click="sendFeedback(editedImg)"></span>
+					<span id="like-button" class="glyphicon glyphicon-heart" ng-click="likeThisImg(editedImg)"></span>
 				</div>
 			</div>
 		</div>

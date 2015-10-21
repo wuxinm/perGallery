@@ -1,0 +1,70 @@
+<div class="combine-view row">
+	<div class="combine-container">
+		<canvas id="c"></canvas>
+	</div>
+	<div class="profile-bottom-bar">
+		<div class="profile-bottom-bar-buttons">
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="pickBackground()"><span class="glyphicon glyphicon-picture"></span>Background</button>
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="pickUserImage()"><span class="glyphicon glyphicon-eye-open"></span>Add Image</button>
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="saveCanvas()"><span class="glyphicon glyphicon-floppy-disk"></span>Save</button>
+		</div>
+	</div>
+	<div id="combineAlert" class="alert alert-success alert-dismissible fade in" role="alert">
+		<h3>Combine Image Created ~!</h3>
+		<p>
+			<button type="button" class="btn btn-success" ng-click="goBack()">Back</button>
+		</p>
+	</div>
+	<div class="modal fade" id="combineModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h5 class="modal-title">Combine Backgroumd from Youmeng3</h5>
+				</div>
+				<div class="modal-body editedImg-body">
+					<div class="container-fluid">
+						<div class="row">
+							<div class="combine-bg-imgs col-xs-3" ng-repeat="img in backgroundImgs" ng-click="selectBgImg(this)">
+								<img src="{{ img.path }}">
+								<div class="upload-img-preview-mask" ng-class="{selected : img.isSelected}">
+									<span class="glyphicon glyphicon-ok-circle"></span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" ng-click="createCanvas()">Choose BG</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="imageModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h5 class="modal-title">Combine Image from Youmeng3</h5>
+				</div>
+				<div class="modal-body editedImg-body">
+					<div class="container-fluid">
+						<div class="row">
+							<div class="combine-bg-imgs col-xs-3" ng-repeat="img in userImgs" ng-click="selectUserImg(this)">
+								<img src="{{ img.thumbpath.lowThumb }}">
+								<div class="upload-img-preview-mask" ng-class="{selected : img.isSelected}">
+									<span class="glyphicon glyphicon-ok-circle"></span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" ng-click="addUserImage()">Choose BG</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

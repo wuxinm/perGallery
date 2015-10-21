@@ -8,10 +8,10 @@ var galleryControllers = angular.module('galleryControllers', []);
 
 galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$window', '$location',
 	'ViewMsg', 'MainImageService', 'SearchUserService', 'AddFriendService', 'NotificationService', 
-	'SentImgCommentService',
+	'SentImgCommentService', 'ImgCommentService',
 	function ($scope, $timeout, $interval, $window, $location,
 		ViewMsg, MainImageService, SearchUserService, AddFriendService, NotificationService, 
-		SentImgCommentService) {
+		SentImgCommentService, ImgCommentService) {
 		//Profile Label
 		$scope.userProfilePhoto = LoggedIn.userPhoto;
 		$scope.userName = LoggedIn.name;
@@ -47,13 +47,27 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 		$scope.notifQueue = [];
 		
 		// feedback
-		$scope.feedback = 'Send feedback...';
+		var inputTarget;
+		$scope.feedback = '';
+		$scope.imgComments = [];
 
 		var socket = io.connect();
-		socket.on('private message', function (data) {
-			if (data.friend === LoggedIn.name) {
-				$scope.notifQueue.push(data);
-				NotificationService.read({ username: LoggedIn.name, friend: data.friend, user: data.user });
+		socket.on('new notif', function (data) {
+			if (data.to_user === LoggedIn.name) {
+				var notif = $scope.notifQueue.filter(function (obj) {
+					if (data.category === 'feedback_notif') {
+						return obj.img_comm_id === data.img_comm_id;	
+					} else if (data.category === 'chatMsg_notif') {
+						return obj.from_user === data.from_user && obj.category === 'chatMsg_notif';
+					}
+				});
+				console.log(notif);
+				if (notif.length !== 0) {
+					notif[0].count ++;
+				} else {
+					// notif[0].count = 1;
+					$scope.notifQueue.push(data);
+				}
 			}
 		});
 
@@ -62,9 +76,7 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 		}, function (data) {
 			if (data.length !== 0) {
 				data.forEach(function (notif) {
-					if (!notif.readed) {
-						$scope.notifQueue.push(notif);
-					}
+					$scope.notifQueue.push(notif);
 				}, this);
 			}
 		});
@@ -72,7 +84,9 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 		SentImgCommentService.query({
 			username: LoggedIn.name
 		}, function (comments) {
-			$scope.imgComments = comments;
+			comments.forEach(function(comm) {
+				$scope.imgComments.push(comm);
+			}, this);
 		});
 
 		MainImageService.query({
@@ -184,21 +198,69 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 			$location.path('/home/friend/' + friendName);
 		}
 
-		$scope.jumpToMsg = function (friendName, username) {
-			ViewMsg.viewMsg = true;
-			NotificationService.read({ username: LoggedIn.name, friend: friendName, user: username });
-			$location.path('/home/friend/' + friendName);
+		$scope.jumpToNotif = function (notif) {
+			console.log(notif);
+			NotificationService.read({
+				username: LoggedIn.name,
+				id: notif._id
+			});
+			if (notif.category === 'feedback_notif') {
+				var index = $scope.notifQueue.indexOf(notif);
+				$scope.notifQueue.splice(index, 1);
+				ImgCommentService.query({
+					username: LoggedIn.name,
+					img_comm_id: notif.img_comm_id
+				}, function (data) {
+					console.log(data);
+					$scope.editedImg = data[0];
+					angular.element('#editedImgModal').modal('show');
+				});
+			} else if (notif.category === 'chatMsg_notif') {
+				ViewMsg.viewMsg = true;
+				// NotificationService.read({ 
+				// 	username: LoggedIn.name
+				// }, { friend: notif.from_user, user: LoggedIn.name });
+				$location.path('/home/friend/' + notif.from_user);
+			}
 		}
 		
 		$scope.clearFeedbackInput = function (event) {
-			console.log(event);
-			event.target.defaultValue = '';
+			event.target.value = '';
 			event.target.style.color = 'black';
 		}
 		
-		$scope.sendingFeedback = function (event) {
+		$scope.storeInputValue = function (event) {
+			inputTarget = event;
+			$scope.feedback = event.target.value;
 		}
-
+		
+		$scope.sendFeedback = function (comm) {
+			if ($scope.feedback === '') {
+				console.log('empty msg')
+			} else {
+				var fb = { 
+					from_user: LoggedIn.name, 
+					feedback: $scope.feedback 
+				};
+				ImgCommentService.addComment({
+					username: LoggedIn.name,
+					img_comm_id: comm._id
+				}, fb);
+				comm.comments.push(fb);	
+				
+				var fb_notif = { 
+					category: 'feedback_notif',
+					img_comm_id: comm._id,
+					date: Date.now(), 
+					from_user: LoggedIn.name, 
+					to_user:  comm.to_user
+				}
+				socket.emit('notif', fb_notif);
+				console.log(inputTarget);
+				inputTarget.target.value = 'Send feedback...';
+				inputTarget.target.style.color = '#9d9d9d';
+			}
+		}
 	}
 ]);
 
@@ -318,14 +380,18 @@ galleryControllers.controller('UploadCtrl', ['$scope', '$timeout', 'Upload',
 // ---------------------- GALLERY PAGE CONTROLLER ---------------------------------
 
 galleryControllers.controller('GalleryCtrl', ['$scope', '$route', '$window', '$location', '$animate', 'GalleryService',
-	'Lightbox', 'FavouritePhotoService', 'ShowFavouriteService', 'RemoveImageService',
+	'Lightbox', 'FavouritePhotoService', 'ShowFavouriteService', 'RemoveImageService', 'GalleryCombineService',
+	'GalleryVideoService',
 	function ($scope, $route, $window, $location, $animate, GalleryService, Lightbox, FavouritePhotoService
-		, ShowFavouriteService, RemoveImageService) {
+		, ShowFavouriteService, RemoveImageService, GalleryCombineService,
+		GalleryVideoService) {
 		$scope.galleryQueue = [];
 		$scope.imgSelected = false;
 		$scope.lightImgSrc;
 		$scope.allphotos = true;
 		$scope.gallerySearching = false;
+		$scope.combineImgs = [];
+		$scope.videos = [];
 
 		var skip = 0;
 
@@ -334,12 +400,28 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route', '$window', '$l
 				username: LoggedIn.name,
 				skip: skip
 			}, function (data) {
+					console.log(data);
 				for (var i = 0; i < data.length; i++) {
-					$scope.galleryQueue.push(data[i]);
+					if (data[i].extension === 'MP4') {
+						console.log('why');
+						$scope.videos.push(data[i]);
+					} else {
+						$scope.galleryQueue.push(data[i]);
+					}
 				};
 				skip += 30;
+				console.log($scope.videos);
 			});
 		}
+		
+		GalleryCombineService.query({
+			username: LoggedIn.name,
+			category: 'image'
+		}, function (combineImgs) {
+			combineImgs.forEach(function(element) {
+				$scope.combineImgs.push(element);
+			}, this);
+		});
 
 		$scope.loadMoreImgs();
 
@@ -354,8 +436,19 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route', '$window', '$l
 		$scope.stopSearch = function () {
 			$scope.gallerySearching = false;
 		}
+		
+		$scope.searchVideo = function () {
+			GalleryVideoService({
+				username: LoggedIn.name
+			}, function(videos) {
+				videos.forEach(function(element) {
+					$scope.videos.push(element);
+				}, this);
+			});
+		}
 
 		$scope.showImg = function (image, $event) {
+			console.log(image.img);
 			Lightbox.lightboxWidth = $window.innerWidth * 0.7;
 			Lightbox.lightboxHeight = Lightbox.lightboxWidth / 1.6;
 			Lightbox.lightboxX = $window.innerWidth * 0.15;
@@ -370,8 +463,12 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route', '$window', '$l
 			angular.element('#light-image').css('height', Lightbox.originalImgHeight);
 			$scope.imgSelected = true;
 			$scope.originalImg =  image.img;
-			$scope.lightImgPath = image.img.thumbpath.mediumThumb;
-			$scope.lightImgComments = image.img.commentImgs;
+			if ($scope.originalImg.category === 'image') {
+				$scope.lightImgPath = image.img.path;
+			} else {
+				$scope.lightImgPath = image.img.thumbpath.mediumThumb;
+				$scope.lightImgComments = image.img.commentImgs;
+			}
 		}
 
 		$scope.closeLight = function () {
@@ -420,7 +517,7 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route', '$window', '$l
 		$scope.removeImg = function () {
 			RemoveImageService.delete({
 				username: LoggedIn.name,
-				name: $scope.lightImg.name,
+				name: $scope.originalImg.name,
 			}, function (data) {
 				// $location.path('/gallery');
 				$route.reload();
@@ -439,33 +536,49 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route', '$window', '$l
 
 galleryControllers.controller('FriendPageCtrl', ['$scope', '$route', '$routeParams', '$location',
 	 'ViewMsg', 'GetFriendInfoService', 'GetFriendPhotoService', 'GetFriendMessageService', 'NotificationService',
+	 'LikeImgCommentService', 'SentImgCommentService', 'ImgCommentService',
 	 function ($scope, $route, $routeParams, $location,
-		ViewMsg, GetFriendInfoService, GetFriendPhotoService, GetFriendMessageService, NotificationService) {
-
+		ViewMsg, GetFriendInfoService, GetFriendPhotoService, GetFriendMessageService, NotificationService,
+		LikeImgCommentService, SentImgCommentService, ImgCommentService ) {
+		
+		// friend page show model
+		// 0 gallery model
+		// 1 sent image comment model
+		// 2 received image comment model
+		$scope.friendPageModel = 0;
 		$scope.galleryQueue = [];
+		$scope.videos = [];
 		$scope.messages = [];
+		$scope.feedback = ''
+		$scope.imgComments = [];
 		// $scope.friend = $routeParams.friendname;
 		var messageContent = "";
 		var msg_each = "";
+		var liked = false;
 
 		var socket = io.connect();
 		socket.on('private message', function (data) {
-			if (data.friend === LoggedIn.name) {
+			if (data.to_user === LoggedIn.name) {
+				console.log("test~~~~~");
+				NotificationService.read({ 
+					username: LoggedIn.name
+				}, { from_user: $routeParams.friendname, to_user: LoggedIn.name});
 				newFriendMessage(data);
-				// NotificationService.read({username: LoggedIn.name, friend: friendName});
 			}
 		});
 
 		$scope.messageDialog = function () {
+			NotificationService.read({ 
+				username: LoggedIn.name
+			}, { from_user: $routeParams.friendname, to_user: LoggedIn.name});
 			angular.element('.message-content').empty();
 			messageContent = "";
 			GetFriendMessageService.query({
 				username: LoggedIn.name,
 				friendname: $routeParams.friendname
 			}, function (messages) {
-				console.log(messages);
 				messages.forEach(function (msg) {
-					if (msg.user === LoggedIn.name && msg.friend === $routeParams.friendname) {
+					if (msg.from_user === LoggedIn.name && msg.to_user === $routeParams.friendname) {
 						msg_each = '<li class="col-xs-12"><div class="tooltip user-message col-xs-5 col-xs-offset-6" role="tooltip"><div class="tooltip-inner">' + msg.message
 						+ '</div></div><span class="col-xs-1"><img class="img-circle" width="45px" height="45px" src="' + LoggedIn.userPhoto + '"></span></li>'
 					} else {
@@ -482,7 +595,13 @@ galleryControllers.controller('FriendPageCtrl', ['$scope', '$route', '$routePara
 
 		$scope.sendMessage = function (message) {
 			var date = Date();
-			var msg = { message: message, date: date, user: LoggedIn.name, friend: $routeParams.friendname };
+			var msg = { 
+				category: 'chatMsg_notif',
+				message: message, 
+				date: date, 
+				from_user: LoggedIn.name, 
+				to_user: $routeParams.friendname 
+			};
 			newUserMessage(msg);
 			socket.emit('message', msg);
 			$scope.messageInput = "";
@@ -508,7 +627,11 @@ galleryControllers.controller('FriendPageCtrl', ['$scope', '$route', '$routePara
 			friendname: $routeParams.friendname
 		}, function (photos) {
 			for (var i = 0; i < photos.length; i++) {
-				$scope.galleryQueue.push(photos[i]);
+				if (photos[i].extension === 'MP4') {
+						$scope.videos.push(photos[i]);
+					} else {
+						$scope.galleryQueue.push(photos[i]);
+					}
 			}
 		});
 
@@ -526,31 +649,119 @@ galleryControllers.controller('FriendPageCtrl', ['$scope', '$route', '$routePara
 		$scope.jumpToEditPage = function (image) {
 			$location.path('/home/friend/' + $routeParams.friendname + '/editing/' + image.img._id);
 		}
+		
+		$scope.friendSentImgComment = function () {
+			SentImgCommentService.query({
+				username: $routeParams.friendname
+			}, function (comments) {
+				comments.forEach(function(comm) {
+					$scope.imgComments.push(comm);
+				}, this);
+				$scope.friendPageModel = 1;
+			});
+		}
+		
+		$scope.showEditedImg = function (image) {
+			liked = false;
+			angular.element('#like-button').css('color', 'black');
+			$scope.editedImg = image.comm;
+			angular.element('#friendImgModal').modal('show');
+			LikeImgCommentService.query({
+				username: LoggedIn.name,
+				friendname: $routeParams.friendname,
+				img_comm_id: image.comm._id
+			}, function(likeuser) {
+				if (likeuser.length !== 0) {
+					liked = true;
+					angular.element('#like-button').css('color', 'red');
+				}
+			});
+			// angular.element('#editedImgModal').modal('show');
+		}
+		
+		$scope.clearFeedbackInput = function () {
+			angular.element('#comment-input')[0].value = '';
+				angular.element('#comment-input').css('color', 'black');
+		}
+		
+		$scope.storeInputValue = function (event) {
+			$scope.feedback = event.target.value;
+		}
+		
+		$scope.sendFeedback = function (comm) {
+			if ($scope.feedback === '') {
+				console.log('empty msg');
+			} else {
+				var fb = {
+					from_user: LoggedIn.name,
+					feedback: $scope.feedback
+				};
+				ImgCommentService.addComment({
+					username: LoggedIn.name,
+					img_comm_id: comm._id
+				}, fb);
+				comm.comments.push(fb);	
+				var fb_notif = { 
+					category: 'feedback_notif',
+					img_comm_id: comm._id,
+					date: Date.now(), 
+					from_user: LoggedIn.name, 
+					to_user:  comm.from_user
+				}
+				socket.emit('notif', fb_notif);
+				$scope.feedback = '';
+				console.log(angular.element('#comment-input'));
+				angular.element('#comment-input')[0].value = 'Send feedback...';
+				angular.element('#comment-input').css('color', '#9d9d9d');
+			}
+		}
+		
+		$scope.likeThisImg = function (comm) {
+			if (liked) {
+				console.log('You already liked this image');
+			} else {
+				liked = true;
+				angular.element('#like-button').css('color', 'red');
+				comm.like_user.push(LoggedIn.name);
+				LikeImgCommentService.likeImg({
+					username: LoggedIn.name,
+					friendname: $routeParams.friendname,
+					img_comm_id: comm._id
+				});
+			}
+		}
+		
+		$scope.friendCombineImages = function () {
+			
+		}
 	}
 ]);
 
+// --------------------------- Edit Controller ----------------------------------
+
 galleryControllers.controller('EditImageCtrl', ['$scope', '$route', '$routeParams', '$location', '$window',
-	'EditPhotoService',
-	function ($scope, $route, $routeParams, $location, $window, EditPhotoService) {
+	'EditPhotoService', 'UploadCombineService',
+	function ($scope, $route, $routeParams, $location, $window, EditPhotoService, UploadCombineService) {
 		
 		$scope.brushWidth = 5; //default brush width
 		$scope.brushColor = '#00ff00'; //default brush color
 		$scope.imgEditing = false;
+		$scope.cutting = false;
 		var friendname = $routeParams.friendname;
 		var photo_id = $routeParams.photo_id;
+		var line1, line2, line3, line4;
+		var imgBase64;
 		
 		//initiate canvas
 		var canvas = new fabric.Canvas('c', {
 			isDrawingMode: true,
 			allowTouchScrolling: true
 		});
+		
 		canvas.freeDrawingBrush = new fabric['PencilBrush'](canvas);
 		canvas.freeDrawingBrush.color = $scope.brushColor;
 		canvas.freeDrawingBrush.width = $scope.brushWidth;
-		// fabric.Image.fromURL('../uploads/mediumThumbnails/13e43ee756098bd38dacc08b49625278.jpg', function(oImg) {
-		// 	oImg.scale(0.5);
-		// 	canvas.add(oImg);
-		// });
+				
 		EditPhotoService.query({
 			username: LoggedIn.name,
 			friendname: friendname,
@@ -661,12 +872,199 @@ galleryControllers.controller('EditImageCtrl', ['$scope', '$route', '$routeParam
 		}
 		
 		$scope.saveCanvas = function () {
-			var imgBase64 = canvas.toDataURL().replace(/^data:image\/png;base64,/,'');
-			EditPhotoService.save({
+			if ($scope.cutting) {
+				canvas.remove(line1, line2, line3, line4);
+				angular.element('#editedAlert').show();
+				imgBase64 = canvas.toDataURL().replace(/^data:image\/png;base64,/,'');
+				UploadCombineService.save({
+					username: LoggedIn.name,
+					photo_id: photo_id,
+					category: 'background'
+				}, {data: imgBase64});
+			} else {
+				imgBase64 = canvas.toDataURL().replace(/^data:image\/png;base64,/,'');
+				EditPhotoService.save({
+					username: LoggedIn.name,
+					friendname: friendname,
+					photo_id: photo_id 
+				}, {data: imgBase64});
+				angular.element('#editedAlert').show();
+			}
+		}
+		
+		function makeLine(coords) {
+			return new fabric.Line(coords, {
+				stroke: 'white',
+				strokeWidth: 1,
+				selectable: false
+			});
+		}		
+		
+		$scope.cutCanvas = function () {
+			canvas.isDrawingMode = false;
+			$scope.cutting = true;
+			line1 = makeLine([ 0, canvas.getHeight()/3, canvas.getWidth(), canvas.getHeight()/3 ]),
+			line2 = makeLine([ 0, canvas.getHeight()*2/3, canvas.getWidth(), canvas.getHeight()*2/3 ]),
+			line3 = makeLine([ canvas.getWidth()/3, 0, canvas.getWidth()/3 , canvas.getHeight()]),
+			line4 = makeLine([ canvas.getWidth()*2/3, 0, canvas.getWidth()*2/3, canvas.getHeight() ]);
+			
+			canvas.add(line1, line2, line3, line4);
+			
+		}
+		
+		$scope.cutImg1 = function () {
+			var rect = cutImg(0, 0);
+			angular.element('#canvas-cut-button1').css('display', 'none');
+			canvas.add(rect);
+		}
+		$scope.cutImg2 = function () {
+			var rect = cutImg(canvas.getWidth()/3, 0);
+			angular.element('#canvas-cut-button2').css('display', 'none');
+			canvas.add(rect);
+		}
+		$scope.cutImg3 = function () {
+			var rect = cutImg(canvas.getWidth()/3*2, 0);
+			angular.element('#canvas-cut-button3').css('display', 'none');
+			canvas.add(rect);
+		}
+		$scope.cutImg4 = function () {
+			var rect = cutImg(0, canvas.getHeight()/3);
+			angular.element('#canvas-cut-button4').css('display', 'none');
+			canvas.add(rect);
+		}
+		$scope.cutImg5 = function () {
+			var rect = cutImg(canvas.getWidth()/3, canvas.getHeight()/3);
+			angular.element('#canvas-cut-button5').css('display', 'none');
+			canvas.add(rect);
+		}
+		$scope.cutImg6 = function () {
+			var rect = cutImg(canvas.getWidth()/3*2, canvas.getHeight()/3);
+			angular.element('#canvas-cut-button6').css('display', 'none');
+			canvas.add(rect);
+		}
+		$scope.cutImg7 = function () {
+			var rect = cutImg(0, canvas.getHeight()/3*2);
+			angular.element('#canvas-cut-button7').css('display', 'none');
+			canvas.add(rect);
+		}
+		$scope.cutImg8 = function () {
+			var rect = cutImg(canvas.getWidth()/3, canvas.getHeight()/3*2);
+			angular.element('#canvas-cut-button8').css('display', 'none');
+			canvas.add(rect);
+		}
+		$scope.cutImg9 = function () {
+			var rect = cutImg(canvas.getWidth()/3*2, canvas.getHeight()/3*2);
+			angular.element('#canvas-cut-button9').css('display', 'none');
+			canvas.add(rect);
+		}
+		
+		
+		function cutImg (left, top) {
+			var rect = new fabric.Rect({
+				left: left,
+				top: top,
+				fill: 'white',
+				width: canvas.getWidth()/3,
+				height: canvas.getHeight()/3,
+				selectable: false
+			});
+			return rect;
+		}
+		
+		$scope.editedBack = function () {
+			$window.history.back();
+		}
+	}
+]);
+
+
+galleryControllers.controller('CombineCtrl', ['$scope', '$route', '$routeParams', '$location', '$window',
+	'GalleryService', 'GetCombineService', 'UploadCombineService',
+	function ($scope, $route, $routeParams, $location, $window, 
+	GalleryService, GetCombineService, UploadCombineService) {
+		$scope.backgroundImgs = [];
+		$scope.userImgs = [];
+		
+		//initiate canvas
+		var canvas = new fabric.Canvas('c', {
+			allowTouchScrolling: true
+		});
+		
+		$scope.pickBackground = function () {
+			$scope.backgroundImgs.splice(0, $scope.backgroundImgs.length);
+			GetCombineService.query({
 				username: LoggedIn.name,
-				friendname: friendname,
-				photo_id: photo_id 
+				category: 'background'
+			}, function (combineImgs) {
+				combineImgs.forEach(function(element) {
+					element.isSelected = false;
+					$scope.backgroundImgs.push(element);
+				}, this);
+				angular.element('#combineModal').modal('show');
+			});
+		}
+		
+		$scope.selectBgImg = function (image) {
+			$scope.backgroundImg = image.img;
+			$scope.backgroundImg.isSelected = true;
+		}
+		
+		$scope.createCanvas = function () {
+			var src = $scope.backgroundImg.path;
+			var img = new Image();
+			img.src = src;
+			img.onload = function () {
+				canvas.setWidth(img.width);
+				canvas.setHeight(img.height);
+				canvas.setBackgroundImage(src, canvas.renderAll.bind(canvas), {
+					scaleX: 1,
+					scaleY: 1
+				});
+				angular.element('#combineModal').modal('hide');
+			}
+		}
+		
+		$scope.pickUserImage = function () {
+			$scope.userImgs.splice(0, $scope.userImgs.length);
+			GalleryService.query({
+				username: LoggedIn.name,
+				skip: 0
+			}, function (data) {
+				for (var i = 0; i < data.length; i++) {
+					if (data[i].extension !== 'MP4') {
+						data[i].isSelected = false;
+						$scope.userImgs.push(data[i]);
+					}
+				};
+				angular.element('#imageModal').modal('show');
+			});
+		}
+		
+		$scope.selectUserImg = function (image) {
+			$scope.userImg = image.img;
+			console.log($scope.userImg);
+			$scope.userImg.isSelected = true;
+		}
+		
+		$scope.addUserImage = function () {
+			fabric.Image.fromURL($scope.userImg.thumbpath.lowThumb, function(oImg) {
+				canvas.add(oImg);
+			});
+			angular.element('#imageModal').modal('hide');
+		}
+		
+		$scope.saveCanvas = function () {
+			var imgBase64 = canvas.toDataURL().replace(/^data:image\/png;base64,/,'');
+			UploadCombineService.save({
+				username: LoggedIn.name,
+				photo_id: $scope.userImg._id,
+				category: 'image'
 			}, {data: imgBase64});
+			angular.element('#combineAlert').show();
+		}
+		
+		$scope.goBack = function () {
+			$window.history.back();
 		}
 	}
 ]);

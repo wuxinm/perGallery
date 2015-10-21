@@ -1,7 +1,7 @@
 <div class="home-view row">
-	<div class="empty-gallery-alert" ng-show="emptyGalleryAlert">
+	<!--<div class="empty-gallery-alert" ng-show="emptyGalleryAlert">
 		<h3>Please add your first image~~!!</h3>
-	</div>
+	</div>-->
 	<div class="mainImage" ng-show="sliderMode === 1">
  		<img class="home-slider" src="{{ img.thumbpath.mediumThumb }}" ng-repeat="img in mainImages" ng-class="{sliderhide: mainImageTopOne === img._id, sliderleft50: sliderLeft50 === img._id, sliderleft100: sliderLeft100 === img._id}">
 	</div>
@@ -51,15 +51,27 @@
 		</div>
 	</div>
 	<div class="user-comments-section col-md-6 col-md-offset-3 col-xs-12" ng-show="sliderMode === 0">
-		<div class="user-img-comment" ng-repeat="comm in imgComments">
+		<div class="user-img-comment col-xs-12" ng-repeat="comm in imgComments">
 			<img src="{{ comm.path }}">
-			<div class="comment-infobar">
+			<div class="comment-infobar col-xs-12">
 				<h4 class="">Iamge comment sent to <span class="comment-user">{{ comm.to_user }}</span></h4>
 				<h6 class="">{{ comm.uploadAt }}</h6>
-				<section class="comment-feedback">
-					<span class="glyphicon glyphicon-heart"></span>
-					<span class="glyphicon glyphicon-send"></span>
-					<input type="text" name="FirstName" value="Send feedback..." ng-click="clearFeedbackInput($event)">
+				<div class="likes" ng-show="comm.like_user.length !== 0">
+						<span class="likes-title">likes from </span>
+						<span class="likes-user" ng-repeat="user in comm.like_user">{{ user }}.</span>
+					</div>
+				<div class="comment-feedbacks col-xs-10 col-xs-offset-1" ng-show="comm.comments.length !== 0">
+					<ul>
+						<li ng-repeat="fb in comm.comments">
+							<span>{{ fb.from_user }}:</span>
+							<p>{{ fb.feedback }}</p>
+						</li>
+					</ul>
+				</div>
+				<section class="comment-feedback-input col-xs-10 col-xs-offset-1">
+					<input type="text" class="col-xs-10" name="FirstName" value="Send feedback..." ng-click="clearFeedbackInput($event)" ng-keyup="storeInputValue($event)">
+					<span class="glyphicon glyphicon-send" ng-click="sendFeedback(comm)"></span>
+					<!--<span class="glyphicon glyphicon-heart"></span>-->
 				</section>
 			</div>
 	</div>
@@ -68,12 +80,37 @@
 			<div class="btn-group dropup notif-button">
 				<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-click=""><span class="glyphicon glyphicon-envelope"></span>Notifications<span class="badge" style="margin-left: 5px">{{ notifQueue.length }}</span></button>
 				<ul class="dropdown-menu">
-					<li ng-repeat="notif in notifQueue"><a ng-show="notif.category === 'msg'" ng-click="jumpToMsg(notif.user, notif.friend)">You've got message from <span class="message-from">{{ notif.user }}</span></a></li>
+					<li class="notifs" ng-repeat="notif in notifQueue"><a ng-click="jumpToNotif(notif)"><span ng-show="notif.category === 'feedback_notif'">ImageEdited feedback</span><span ng-show="notif.category === 'chatMsg_notif'">You've got message</span>from <span class="notif-from">{{ notif.from_user }}</span><span class="badge">{{ notif.count }}</span></a></li>
 				</ul>
 			</div>
 			<button type="button" class="btn btn-info" ng-click="showFriends()"><span class="glyphicon glyphicon-user"></span>Friends</button>
-			<button type="button" class="btn btn-info"><span class="glyphicon glyphicon-plus-sign"></span><a href="/#upload">Upload</a></button>
+			<button type="button" class="btn btn-info"><span class="glyphicon glyphicon-inbox"></span>Received</button>
 			<button type="button" class="btn btn-info" ng-click="showSlider()"><span class="glyphicon glyphicon-play"></span>Slider</button>
+		</div>
+	</div>
+	<div class="modal fade" id="editedImgModal">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h5 class="modal-title">EditedImg from <span class="editedImg-fromuser">{{ editedImg.from_user }}</span></h5>
+				</div>
+				<div class="modal-body editedImg-body">
+					<div class="container-fluid">
+						<div class="row">
+							<img class="" src="{{ editedImg.path }}">
+						</div>
+					</div>
+				</div>
+				<div class="modal-comments">
+					<ul class="comments-list">
+						<li ng-repeat="fb in editedImg.comments">
+							<span>{{ fb.from_user }}:</span>
+							<p>{{ fb.feedback }}</p>
+						</li>
+					</ul>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

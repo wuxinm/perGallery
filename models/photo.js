@@ -22,12 +22,14 @@ var PhotoSchema = new Schema({
 	username: { type: String, default: '' },
 	originalname: { type: String, default: '' },
 	path: { type: String, default: '' },
+	extension: { type: String, default: '' },
 	thumbpath: {
 		lowThumb: { type: String, default: ''},
 		mediumThumb: { type: String, default: ''}
 	},
 	favourite: { type: Boolean, default: false },
 	commentImgs: { type: Array, default: [] },
+	combineImgs: { type: Array, default: [] },
 	tags: { type: [], get: getTags, set: setTags },
 	uploadAt: { type: Date, default: '' }
 });
@@ -39,6 +41,7 @@ PhotoSchema.statics.createPhoto = function (img, user, callback){
 	newPhoto.username = user.username;
 	newPhoto.originalname = img.originalname;
 	newPhoto.path = img.path.substring(7, img.path.length);
+	newPhoto.extension = img.extension;
 	newPhoto.thumbpath.lowThumb = img.path.substring(7, 14) + '/lowThumbnails/' + img.name;
 	newPhoto.thumbpath.mediumThumb = img.path.substring(7, 14) + '/mediumThumbnails/' + img.name;
 	newPhoto.uploadAt = Date.now();
@@ -85,6 +88,11 @@ PhotoSchema.statics.dynamicPhotos = function (skip, username, callback) {
 	this.find({ username: username }).limit(30).skip(skip).exec(callback);
 }
 
+// select video
+PhotoSchema.statics.videoPhotos = function (username, callback) {
+	this.find({ username: username, extension: {$eq: 'mov'}}, callback);
+}
+
 PhotoSchema.statics.addToFavourite = function (photoName, callback) {
 	this.update({ name: photoName }, { $set: { favourite: true } }, callback);
 }
@@ -99,7 +107,12 @@ PhotoSchema.statics.removePhoto = function (photoName, callback) {
 
 // add img comment to corresponding img
 PhotoSchema.statics.addImgComment = function (id, img, callback) {
-	this.update({ _id: id }, { $push: { commentImgs: img } }, callback);
+	this.update({ _id: id }, { $push: { commentImgs: img }}, callback);
+} 
+
+// add combine image to correspoind img
+PhotoSchema.statics.addCombineImg = function (id, img, callback) {
+	this.update({ _id: id }, { $push: { combineImgs: img }}, callback);
 } 
 
 mongoose.model('Photo', PhotoSchema);

@@ -1,14 +1,14 @@
 <div class="upload-view row">
   <div class="upload-preview col-xs-12">
 		<div ng-repeat="img in uploadQueue" class="upload-img-preview col-xs-2" ng-class="{editing : editing}" ng-click="selectUploadQueue(this)">
-  		<img ngf-thumbnail="img" ngf-accept="'image/*'"/>
+  		<img ngf-thumbnail="img"/>
   		<div class="upload-img-preview-mask" ng-class="{selected : img.selected}">
   			<span class="glyphicon glyphicon-ok-circle"></span>
   		</div>
 		</div>
   </div>
   <div class="upload-bottom-bar">
-    <span class="glyphicon glyphicon-plus" ng-hide="editing" type="file" ngf-select ng-model="imgFiles" ngf-multiple="true" ngf-capture="'camera'" accept="image/*"></span>
+    <span class="glyphicon glyphicon-plus" ng-hide="editing" type="file" ngf-select ng-model="imgFiles" ngf-multiple="true" ngf-capture="'camera'"></span>
     <span class="glyphicon glyphicon-th-list" ng-click="editUploadQueue()"></span>
     <span class="glyphicon glyphicon-trash" ng-click="removeSelectedImg()" ng-show="editing"></span>
     <span class="glyphicon glyphicon-ok" ng-click="finishUploadQueue()" ng-show="editing"></span>
@@ -20,7 +20,7 @@
         <div class="modal-header">
           <h4 class="modal-title">Uploading</h4>
         </div>
-        <div class="modal-body">
+        <div class="modal-body uploading-body">
           <div>
             <div class="none-photos-alert" ng-hide="uploading">
               <h4>{{ nonePhotoAlert }}</h4>
