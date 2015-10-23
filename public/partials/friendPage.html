@@ -14,7 +14,7 @@
 			</div>
 		</div>
 		<div class="profile-info col-xs-12 col-md-2">
-			<h3>{{ friendName }}</h3>
+			<h3 ng-click="reloadFriPage()" style="cursor: pointer">{{ friendName }}</h3> 
 			<p>{{ friendLocation }}<span class="glyphicon glyphicon-map-marker"></span></p>
 			<p>{{ friendDescription }}<span class="glyphicon glyphicon-certificate"></span></p>
 		</div>
@@ -58,7 +58,7 @@
 						<div class="input-group">
 						<input class="form-control" placeholder="input message" ng-model="messageInput">
 						<span class="input-group-btn">
-							<button class="btn btn-default" type="button" ng-click="clearInput()"><span class="glyphicon glyphicon-remove-circle"></span></button>
+							<button class="btn btn-default" type="button" ng-click="clearInput()">@</button>
 							<button class="btn btn-success" style="margin: 0" type="button" ng-click="sendMessage(messageInput)"><span class="glyphicon glyphicon-send" style="padding-right: 10px"></span>send</button>
 						</span>
 					</div>

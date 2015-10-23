@@ -8,8 +8,8 @@ exports.received_img_comment = '/:username/home/receivedImgComment';
 exports.notification = '/:username/home/notification';
 exports.search_friend = '/:username/home/friends/search';
 exports.add_friend = '/:username/home/friends/addFriend';
-exports.upload_combine_img = '/:username/combine/:photo_id';
-exports.get_combine_img = '/:username/combine';
+exports.combine_img = '/:username/combine';
+// exports.combine_img = '/:username/combine';
 
 exports.get_friend_info = '/:username/home/friendInfo';
 exports.get_friend_photos = '/:username/home/friend/:friendname';

@@ -98,17 +98,15 @@ function addImgToDB (img, req, res) {
 /* gallery function */
 
 exports.galleryPhotos = function (req, res) {
-	if(req.params.username === req.user.username) {
 		var skip = req.query.skip;
-		var username = req.user.username;
+		var username = req.params.username;
 		// var extension = 'jpg';
 		Photo.dynamicPhotos(skip, username, function (err, photos) {
 			if(err)
 				res.json(err);
-			console.log(photos);
+			// console.log(photos);
 			res.json(photos);
-		})
-	}
+		});
 }
 
 /**
@@ -181,6 +179,7 @@ exports.uploadEditedPhoto = function (req, res) {
 	console.log('wokao');
 	var img = req.body.data;
 	var buffer = new Buffer(img, 'base64');
+	console.log(__dirname);
 	var storePath = __dirname.replace('controllers', 'public') + '/uploads/editedImgs/';
 	var photo_id = req.params.photo_id;
 	Photo.getPhoto(photo_id, function (err, photo) {

@@ -3,10 +3,23 @@
 		<canvas id="c"></canvas>
 	</div>
 	<div class="profile-bottom-bar">
-		<div class="profile-bottom-bar-buttons">
+		<div class="profile-bottom-bar-buttons" ng-show="combineCate === 0">
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="chooseSource()"><span class="glyphicon glyphicon-picture"></span><span>Make Source</span></button>
 			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="pickBackground()"><span class="glyphicon glyphicon-picture"></span>Background</button>
-			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="pickUserImage()"><span class="glyphicon glyphicon-eye-open"></span>Add Image</button>
-			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="saveCanvas()"><span class="glyphicon glyphicon-floppy-disk"></span>Save</button>
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="pickMoreImages()"><span class="glyphicon glyphicon-eye-open"></span>Add Image</button>
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="saveImg()"><span class="glyphicon glyphicon-floppy-disk"></span>Save</button>
+		</div>
+		<div class="profile-bottom-bar-buttons free-cut-bar" ng-show="combineCate === 1">
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="subPuzzleNet()"><span class="glyphicon glyphicon-picture"></span><span>Sub</span></button>
+			<span class="badge" style="margin: 0px 10px">{{ puzzle_lv }}</span>
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="addPuzzleNet()"><span class="glyphicon glyphicon-eye-open"></span>Add</button>
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="saveImg()"><span class="glyphicon glyphicon-eye-open"></span>Save</button>
+		</div>
+		<div class="profile-bottom-bar-buttons free-cut-bar" ng-show="combineCate === 2">
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="addRectCut()"><span class="glyphicon glyphicon-picture"></span><span>Rect</span></button>
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="addCircleCut()"><span class="glyphicon glyphicon-picture"></span>Circle</button>
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="cutImg()"><span class="glyphicon glyphicon-eye-open"></span>Cut</button>
+			<button type="button" id="clear-canvas" class="btn btn-info" ng-click="saveImg()"><span class="glyphicon glyphicon-eye-open"></span>Save</button>
 		</div>
 	</div>
 	<div id="combineAlert" class="alert alert-success alert-dismissible fade in" role="alert">
@@ -20,51 +33,91 @@
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					<h5 class="modal-title">Combine Backgroumd from Youmeng3</h5>
+					<h5 class="modal-title" style="font-family: 'Source Sans Pro', sans-serif; font-size: 18px">Combine images from <span style="color: #0084B4">{{ currentUser }}</span></h5>
+					<div class="modal-users">
+						<ul class="modal-users-portrait">
+							<li ng-click="changeUser(logginUser)">
+								<img src="{{ userProfilePhoto }}">
+							</li>
+							<li ng-repeat="fri in user_friends" ng-click="changeUser(fri.name)">
+								<img src="{{ fri.profilePhotoUrl }}">
+							</li>
+						</ul>
+					</div>
 				</div>
 				<div class="modal-body editedImg-body">
 					<div class="container-fluid">
 						<div class="row">
-							<div class="combine-bg-imgs col-xs-3" ng-repeat="img in backgroundImgs" ng-click="selectBgImg(this)">
-								<img src="{{ img.path }}">
-								<div class="upload-img-preview-mask" ng-class="{selected : img.isSelected}">
+							<div class="combine-imgs col-xs-3" ng-repeat="img in modalImgs" ng-click="selectSourceImg(this)" ng-show="modalModel === 0">
+								<img src="{{ img.thumbpath.lowThumb }}">
+								<div class="upload-img-preview-mask" style="margin-left: 15px" ng-class="{selected : img.isSelected}">
 									<span class="glyphicon glyphicon-ok-circle"></span>
+								</div>
+							</div>
+							<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" ng-show="modalModel === 1 || modalModel === 2">
+								<div class="panel panel-default">
+									<div class="panel-heading" role="tab" id="headingOne">
+										<h4 class="collapse-panel panel-title">
+											<a role="button" data-toggle="collapse" data-parent="#accordion" ng-click="toggleEditedImg()" aria-expanded="true" aria-controls="collapseOne">
+												Edited Source
+											</a>
+										</h4>
+									</div>
+									<div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+										<div class="panel-body">
+											<div class="combine-imgs col-xs-3" ng-repeat="img in modalImgs" ng-click="selectSourceImg(this)" ng-show="modalModel === 1 || modalModel === 2">
+												<img  style="border: 1px solid black" src="{{ img.path }}">
+												<div class="upload-img-preview-mask" style="margin-left: 15px" ng-class="{selected : img.isSelected}">
+													<span class="glyphicon glyphicon-ok-circle"></span>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="panel panel-default">
+									<div class="panel-heading" role="tab" id="headingTwo">
+										<h4 class="collapse-panel panel-title">
+											<a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" ng-click="toggleOriginalImg()" aria-expanded="true" aria-controls="collapseTwo">
+												Original Source
+											</a>
+										</h4>
+									</div>
+									<div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+										<div class="panel-body">
+											<div class="combine-imgs col-xs-3" ng-repeat="img in originalImgs" ng-click="selectSourceImg(this)" ng-show="modalModel === 1 || modalModel === 2">
+												<img src="{{ img.thumbpath.lowThumb }}">
+												<div class="upload-img-preview-mask" style="margin-left: 15px" ng-class="{selected : img.isSelected}">
+													<span class="glyphicon glyphicon-ok-circle"></span>
+												</div>
+											</div>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 				<div class="modal-footer">
+					<label class="radio-inline" ng-show="modalModel === 0"><input type="radio" name="optradio" ng-model="combineOpts.category" value="Puzzle">Puzzle</label>
+					<label class="radio-inline" style="margin-right: 10px" ng-show="modalModel === 0"><input type="radio" name="optradio" ng-model="combineOpts.category" value="Free Cut">Free Cut</label>
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-					<button type="button" class="btn btn-primary" ng-click="createCanvas()">Choose BG</button>
+					<button type="button" class="btn btn-primary"  ng-show="modalModel === 0" ng-click="addSource()">Choose source</button>
+					<button type="button" class="btn btn-primary"  ng-show="modalModel === 1" ng-click="addBackground()">Add background</button>
+					<button type="button" class="btn btn-primary"  ng-show="modalModel === 2" ng-click="addImages()">Add Image</button>
 				</div>
 			</div>
 		</div>
 	</div>
-	<div class="modal fade" id="imageModal">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					<h5 class="modal-title">Combine Image from Youmeng3</h5>
-				</div>
-				<div class="modal-body editedImg-body">
-					<div class="container-fluid">
-						<div class="row">
-							<div class="combine-bg-imgs col-xs-3" ng-repeat="img in userImgs" ng-click="selectUserImg(this)">
-								<img src="{{ img.thumbpath.lowThumb }}">
-								<div class="upload-img-preview-mask" ng-class="{selected : img.isSelected}">
-									<span class="glyphicon glyphicon-ok-circle"></span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-					<button type="button" class="btn btn-primary" ng-click="addUserImage()">Choose BG</button>
-				</div>
-			</div>
-		</div>
+	<div id="sourceAlert" class="alert alert-success alert-dismissible fade in" role="alert">
+		<h3>Source Image Created ~!</h3>
+		<p>
+			<button type="button" class="btn btn-success" ng-click="goBack()">Back</button>
+		</p>
+	</div>
+	<div id="saveAlert" class="alert alert-success alert-dismissible fade in" role="alert">
+		<h3>Combine Image Created ~!</h3>
+		<p>
+			<button type="button" class="btn btn-success" ng-click="goBack()">Back</button>
+		</p>
 	</div>
 </div>

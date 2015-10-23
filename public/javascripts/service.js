@@ -16,17 +16,17 @@ galleryService.factory('ImgCommentService', ['$resource',
 	}
 ]);
 
-galleryService.factory('UploadCombineService', ['$resource',
+galleryService.factory('CombineService', ['$resource',
 	function ($resource) {
-		return $resource(api.upload_combine_img, { username: '@username' }, {});
+		return $resource(api.combine_img, { username: '@username' }, {});
 	}
 ]);
 
-galleryService.factory('GetCombineService', ['$resource',
-	function ($resource) {
-		return $resource(api.get_combine_img, { username: '@username' }, {});
-	}
-]);
+// galleryService.factory('GetCombineService', ['$resource',
+// 	function ($resource) {
+// 		return $resource(api.get_combine_img, { username: '@username' }, {});
+// 	}
+// ]);
 
 galleryService.factory('SentImgCommentService', ['$resource',
 	function ($resource) {

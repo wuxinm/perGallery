@@ -48,8 +48,8 @@ router.get(api.notification, notif.getUserNotif);
 router.get(api.search_friend, user.searchUser);
 router.put(api.add_friend, user.addFriendtoDB);
 router.get(api.img_comment_req, editedImg.getEditedImg);
-router.get(api.get_combine_img, combineImg.getCombineImgs);
-router.post(api.upload_combine_img, photo.uploadCombinePhoto);
+router.get(api.combine_img, combineImg.getCombineImgs);
+router.post(api.combine_img, combineImg.AddCombineImg);
 
 router.get(api.get_friend_info, user.getFriendInfo);
 router.get(api.get_friend_photos, photo.getFriendPhotos);

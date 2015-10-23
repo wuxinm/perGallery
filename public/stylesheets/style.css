@@ -827,13 +827,45 @@ a {
 	margin-left: 180px;
 }
 
-.combine-bg-imgs {
-	padding: 0px !important;
-	border: 0px solid #33CCFF;
-	cursor: pointer;
+#combineAlert {
+	font-family: 'Poiret One', cursive;
+	position: absolute;
+	top: 150px;
+	left: 30%;
+	width: 40%;
+	display: none;
 }
 
-#combineAlert {
+.modal-users {
+	margin-top: 10px;
+}
+.modal-users-portrait {
+	list-style: none;
+	margin-bottom: 0;
+	padding-left: 10px;
+}
+.modal-users-portrait li {
+	display: inline;
+	cursor: pointer;
+}
+.modal-users-portrait li img {
+	width: 35px;
+	height: 35px;
+	border-radius: 50%;
+	margin-right: 12px;
+}
+
+.combine-imgs {
+	cursor: pointer;
+	margin-bottom: 10px;
+}
+
+.collapse-panel {
+	text-align: right;
+	font-family: 'Source Sans Pro', sans-serif;
+}
+
+#sourceAlert, #saveAlert {
 	font-family: 'Poiret One', cursive;
 	position: absolute;
 	top: 150px;

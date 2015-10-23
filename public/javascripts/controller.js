@@ -98,7 +98,6 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 				for (var i = 0; i < 3; i++) {
 					$scope.mainImages.push(pickRandomImage(imageList));
 				};
-				$interval(mainImageAnimate, 5000);
 			}
 		});
 
@@ -136,6 +135,7 @@ galleryControllers.controller('HomeCtrl', ['$scope', '$timeout', '$interval', '$
 		// Start Slider model
 		$scope.showSlider = function () {
 			$scope.sliderMode = 1;
+			$interval(mainImageAnimate, 5000);
 		}
 		
 		// show friends list
@@ -400,7 +400,6 @@ galleryControllers.controller('GalleryCtrl', ['$scope', '$route', '$window', '$l
 				username: LoggedIn.name,
 				skip: skip
 			}, function (data) {
-					console.log(data);
 				for (var i = 0; i < data.length; i++) {
 					if (data[i].extension === 'MP4') {
 						console.log('why');
@@ -559,13 +558,16 @@ galleryControllers.controller('FriendPageCtrl', ['$scope', '$route', '$routePara
 		var socket = io.connect();
 		socket.on('private message', function (data) {
 			if (data.to_user === LoggedIn.name) {
-				console.log("test~~~~~");
 				NotificationService.read({ 
 					username: LoggedIn.name
 				}, { from_user: $routeParams.friendname, to_user: LoggedIn.name});
 				newFriendMessage(data);
 			}
 		});
+		
+		$scope.reloadFriPage = function () {
+			$route.reload();
+		}
 
 		$scope.messageDialog = function () {
 			NotificationService.read({ 
@@ -740,16 +742,14 @@ galleryControllers.controller('FriendPageCtrl', ['$scope', '$route', '$routePara
 // --------------------------- Edit Controller ----------------------------------
 
 galleryControllers.controller('EditImageCtrl', ['$scope', '$route', '$routeParams', '$location', '$window',
-	'EditPhotoService', 'UploadCombineService',
-	function ($scope, $route, $routeParams, $location, $window, EditPhotoService, UploadCombineService) {
+	'EditPhotoService',
+	function ($scope, $route, $routeParams, $location, $window, EditPhotoService) {
 		
 		$scope.brushWidth = 5; //default brush width
 		$scope.brushColor = '#00ff00'; //default brush color
 		$scope.imgEditing = false;
-		$scope.cutting = false;
 		var friendname = $routeParams.friendname;
 		var photo_id = $routeParams.photo_id;
-		var line1, line2, line3, line4;
 		var imgBase64;
 		
 		//initiate canvas
@@ -872,103 +872,13 @@ galleryControllers.controller('EditImageCtrl', ['$scope', '$route', '$routeParam
 		}
 		
 		$scope.saveCanvas = function () {
-			if ($scope.cutting) {
-				canvas.remove(line1, line2, line3, line4);
-				angular.element('#editedAlert').show();
-				imgBase64 = canvas.toDataURL().replace(/^data:image\/png;base64,/,'');
-				UploadCombineService.save({
-					username: LoggedIn.name,
-					photo_id: photo_id,
-					category: 'background'
-				}, {data: imgBase64});
-			} else {
-				imgBase64 = canvas.toDataURL().replace(/^data:image\/png;base64,/,'');
-				EditPhotoService.save({
-					username: LoggedIn.name,
-					friendname: friendname,
-					photo_id: photo_id 
-				}, {data: imgBase64});
-				angular.element('#editedAlert').show();
-			}
-		}
-		
-		function makeLine(coords) {
-			return new fabric.Line(coords, {
-				stroke: 'white',
-				strokeWidth: 1,
-				selectable: false
-			});
-		}		
-		
-		$scope.cutCanvas = function () {
-			canvas.isDrawingMode = false;
-			$scope.cutting = true;
-			line1 = makeLine([ 0, canvas.getHeight()/3, canvas.getWidth(), canvas.getHeight()/3 ]),
-			line2 = makeLine([ 0, canvas.getHeight()*2/3, canvas.getWidth(), canvas.getHeight()*2/3 ]),
-			line3 = makeLine([ canvas.getWidth()/3, 0, canvas.getWidth()/3 , canvas.getHeight()]),
-			line4 = makeLine([ canvas.getWidth()*2/3, 0, canvas.getWidth()*2/3, canvas.getHeight() ]);
-			
-			canvas.add(line1, line2, line3, line4);
-			
-		}
-		
-		$scope.cutImg1 = function () {
-			var rect = cutImg(0, 0);
-			angular.element('#canvas-cut-button1').css('display', 'none');
-			canvas.add(rect);
-		}
-		$scope.cutImg2 = function () {
-			var rect = cutImg(canvas.getWidth()/3, 0);
-			angular.element('#canvas-cut-button2').css('display', 'none');
-			canvas.add(rect);
-		}
-		$scope.cutImg3 = function () {
-			var rect = cutImg(canvas.getWidth()/3*2, 0);
-			angular.element('#canvas-cut-button3').css('display', 'none');
-			canvas.add(rect);
-		}
-		$scope.cutImg4 = function () {
-			var rect = cutImg(0, canvas.getHeight()/3);
-			angular.element('#canvas-cut-button4').css('display', 'none');
-			canvas.add(rect);
-		}
-		$scope.cutImg5 = function () {
-			var rect = cutImg(canvas.getWidth()/3, canvas.getHeight()/3);
-			angular.element('#canvas-cut-button5').css('display', 'none');
-			canvas.add(rect);
-		}
-		$scope.cutImg6 = function () {
-			var rect = cutImg(canvas.getWidth()/3*2, canvas.getHeight()/3);
-			angular.element('#canvas-cut-button6').css('display', 'none');
-			canvas.add(rect);
-		}
-		$scope.cutImg7 = function () {
-			var rect = cutImg(0, canvas.getHeight()/3*2);
-			angular.element('#canvas-cut-button7').css('display', 'none');
-			canvas.add(rect);
-		}
-		$scope.cutImg8 = function () {
-			var rect = cutImg(canvas.getWidth()/3, canvas.getHeight()/3*2);
-			angular.element('#canvas-cut-button8').css('display', 'none');
-			canvas.add(rect);
-		}
-		$scope.cutImg9 = function () {
-			var rect = cutImg(canvas.getWidth()/3*2, canvas.getHeight()/3*2);
-			angular.element('#canvas-cut-button9').css('display', 'none');
-			canvas.add(rect);
-		}
-		
-		
-		function cutImg (left, top) {
-			var rect = new fabric.Rect({
-				left: left,
-				top: top,
-				fill: 'white',
-				width: canvas.getWidth()/3,
-				height: canvas.getHeight()/3,
-				selectable: false
-			});
-			return rect;
+			imgBase64 = canvas.toDataURL().replace(/^data:image\/png;base64,/,'');
+			EditPhotoService.save({
+				username: LoggedIn.name,
+				friendname: friendname,
+				photo_id: photo_id 
+			}, {data: imgBase64});
+			angular.element('#editedAlert').show();
 		}
 		
 		$scope.editedBack = function () {
@@ -977,90 +887,422 @@ galleryControllers.controller('EditImageCtrl', ['$scope', '$route', '$routeParam
 	}
 ]);
 
+// --------------------------- Combine Controller ----------------------------------
 
 galleryControllers.controller('CombineCtrl', ['$scope', '$route', '$routeParams', '$location', '$window',
-	'GalleryService', 'GetCombineService', 'UploadCombineService',
+	'GalleryService', 'CombineService',
 	function ($scope, $route, $routeParams, $location, $window, 
-	GalleryService, GetCombineService, UploadCombineService) {
-		$scope.backgroundImgs = [];
-		$scope.userImgs = [];
+	GalleryService, CombineService) {
+		$scope.logginUser = LoggedIn.name;
+		$scope.currentUser = LoggedIn.name;
+		$scope.userProfilePhoto = LoggedIn.userPhoto;
+		$scope.user_friends = LoggedIn.friends;
+		
+		// modalModel 0 is choose img to make source
+		// modalModel 1 is choose background
+		// modalModel 2 is choose adding img
+		$scope.modalModel;
+		
+		// combine category 1 is puzzle
+		// combine category 2 is free cut
+		$scope.combineCate = 0;
+		
+		// cut area 1 is rect
+		// cut area 2 is circle
+		$scope.cut_area = 0;
+		$scope.modalImgs = [];
+		$scope.originalImgs = [];
+		
+		$scope.combineOpts = {
+			category: 'Puzzle'
+		};
+		$scope.puzzle_lv = 3;
+		var puzzle_net = [];
+		var puzzle_block = [];
+		var cutObject; // original image for cutting
+		var ca; // cut area 
+		var cLeft, cTop, cWidth, cHeight, oWidth, oHeight, cRadius;
 		
 		//initiate canvas
 		var canvas = new fabric.Canvas('c', {
 			allowTouchScrolling: true
 		});
 		
-		$scope.pickBackground = function () {
-			$scope.backgroundImgs.splice(0, $scope.backgroundImgs.length);
-			GetCombineService.query({
+		$scope.chooseSource = function () {
+			$scope.modalImgs.splice(0, $scope.modalImgs.length);
+			$scope.modalModel = 0;
+			GalleryService.query({
 				username: LoggedIn.name,
-				category: 'background'
-			}, function (combineImgs) {
-				combineImgs.forEach(function(element) {
-					element.isSelected = false;
-					$scope.backgroundImgs.push(element);
+				skip: 0
+			}, function (imgs) {
+				imgs.forEach(function(element) {
+					if (element.extension !== 'MP4') {
+						element.isSelected = false;
+						$scope.modalImgs.push(element);
+					}
 				}, this);
 				angular.element('#combineModal').modal('show');
 			});
 		}
 		
-		$scope.selectBgImg = function (image) {
-			$scope.backgroundImg = image.img;
-			$scope.backgroundImg.isSelected = true;
+		$scope.pickBackground = function () {
+			$scope.modalImgs.splice(0, $scope.modalImgs.length);
+			$scope.originalImgs.splice(0, $scope.originalImgs.length);
+			$scope.modalModel = 1;
+			getAllSourceImages(LoggedIn.name, LoggedIn.name);
 		}
 		
-		$scope.createCanvas = function () {
-			var src = $scope.backgroundImg.path;
-			var img = new Image();
-			img.src = src;
-			img.onload = function () {
-				canvas.setWidth(img.width);
-				canvas.setHeight(img.height);
-				canvas.setBackgroundImage(src, canvas.renderAll.bind(canvas), {
-					scaleX: 1,
-					scaleY: 1
+		$scope.pickMoreImages = function () {
+			$scope.modalImgs.splice(0, $scope.modalImgs.length);
+			$scope.originalImgs.splice(0, $scope.originalImgs.length);
+			$scope.modalModel = 2;
+			getAllSourceImages(LoggedIn.name, LoggedIn.name);
+		}
+		
+		function makeFileName()
+		{
+				var text = "";
+				var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+		
+				for( var i=0; i < 5; i++ )
+						text += possible.charAt(Math.floor(Math.random() * possible.length));
+		
+				return text;
+		}
+
+		$scope.changeUser = function (name) {
+			$scope.modalImgs.splice(0, $scope.modalImgs.length);
+			$scope.originalImgs.splice(0, $scope.originalImgs.length);
+			$scope.currentUser = name;
+			if ($scope.modalModel === 0) {
+				GalleryService.query({
+					username: name,
+					skip: 0
+				}, function (imgs) {
+					imgs.forEach(function(element) {
+						if (element.extension !== 'MP4') {
+							element.isSelected = false;
+							$scope.modalImgs.push(element);
+						}
+					}, this);
 				});
-				angular.element('#combineModal').modal('hide');
+			} else {
+				getAllSourceImages(LoggedIn.name, name);
 			}
 		}
 		
-		$scope.pickUserImage = function () {
-			$scope.userImgs.splice(0, $scope.userImgs.length);
+		function getAllSourceImages (username, to_user) {
+			CombineService.query({
+				username: username,
+				to_user: to_user,
+				category: 'source'
+			}, function(imgs) {
+				imgs.forEach(function(element) {
+					if (element.extension !== 'MP4') {
+						element.isSelected = false;
+						$scope.modalImgs.push(element);
+					}
+				}, this);
+			});
 			GalleryService.query({
-				username: LoggedIn.name,
+				username: to_user,
 				skip: 0
 			}, function (data) {
-				for (var i = 0; i < data.length; i++) {
-					if (data[i].extension !== 'MP4') {
-						data[i].isSelected = false;
-						$scope.userImgs.push(data[i]);
+				data.forEach(function(element) {
+					if (element.extension !== 'MP4') {
+						element.isSelected = false;
+						$scope.originalImgs.push(element);
 					}
-				};
-				angular.element('#imageModal').modal('show');
+				}, this);
+				angular.element('#combineModal').modal('show');
 			});
 		}
 		
-		$scope.selectUserImg = function (image) {
-			$scope.userImg = image.img;
-			console.log($scope.userImg);
-			$scope.userImg.isSelected = true;
+		$scope.toggleEditedImg = function () {
+			angular.element('#collapseOne').collapse('toggle');
+		}
+		$scope.toggleOriginalImg = function () {
+			angular.element('#collapseTwo').collapse('toggle');
 		}
 		
-		$scope.addUserImage = function () {
-			fabric.Image.fromURL($scope.userImg.thumbpath.lowThumb, function(oImg) {
-				canvas.add(oImg);
+		$scope.selectSourceImg = function (image) {
+			if ($scope.sourceImg) {
+				$scope.sourceImg.isSelected = false;
+			}
+			$scope.sourceImg = image.img;
+			$scope.sourceImg.isSelected = true;
+		}
+		
+		$scope.addSource = function () {
+			if ($scope.combineOpts.category === 'Free Cut') {
+				$scope.combineCate = 2;
+				fabric.Image.fromURL($scope.sourceImg.thumbpath.mediumThumb, function(oImg) {
+					canvas.setWidth(oImg.width/2);
+					canvas.setHeight(oImg.height/2);
+					oImg.scale(0.5);
+					oImg.selectable = false;
+					canvas.add(oImg);
+					angular.element('#combineModal').modal('hide');
+					cutObject = canvas.item(0);
+				});
+			} else if ($scope.combineOpts.category === 'Puzzle') {
+				$scope.combineCate = 1;
+				var src = $scope.sourceImg.thumbpath.mediumThumb;
+				var img = new Image();
+				img.src = src;
+				img.onload = function () {
+					canvas.setWidth(img.width/2);
+					canvas.setHeight(img.height/2);
+					canvas.setBackgroundImage(src, canvas.renderAll.bind(canvas), {
+						scaleX: 0.5,
+						scaleY: 0.5
+					});
+					addPuzzleNet($scope.puzzle_lv);
+					canvas.on('mouse:down', function(options) {
+						drawWhiteRect (options.e.offsetX, options.e.offsetY, $scope.puzzle_lv);
+					});
+					angular.element('#combineModal').modal('hide');
+				}
+				
+			}
+		}
+		
+		$scope.addBackground = function () {
+			if ($scope.sourceImg.category) {
+				var src = $scope.sourceImg.path;
+				var img = new Image();
+				img.src = src;
+				img.onload = function () {
+				console.log($scope.sourceImg);
+					canvas.setWidth(img.width);
+					canvas.setHeight(img.height);
+					canvas.setBackgroundImage(src, canvas.renderAll.bind(canvas), {
+						scaleX: 1,
+						scaleY: 1
+					});
+					angular.element('#combineModal').modal('hide');
+				}
+			} else {
+				src = $scope.sourceImg.thumbpath.mediumThumb;
+				img = new Image();
+				img.src = src;
+				img.onload = function () {
+					canvas.setWidth(img.width/2);
+					canvas.setHeight(img.height/2);
+					canvas.setBackgroundImage(src, canvas.renderAll.bind(canvas), {
+						scaleX: 0.5,
+						scaleY: 0.5
+					});
+					angular.element('#combineModal').modal('hide');
+				}
+			}
+		}
+		
+		$scope.addImages = function () {
+			if ($scope.sourceImg.category) {
+				fabric.Image.fromURL($scope.sourceImg.path, function(oImg) {
+					canvas.add(oImg);
+				});
+			} else {
+				fabric.Image.fromURL($scope.sourceImg.thumbpath.lowThumb, function(oImg) {
+					canvas.add(oImg);
+				});
+			}
+			angular.element('#combineModal').modal('hide');
+		}
+		
+		/**
+		 * puzzle funtions
+		 */
+		
+		$scope.subPuzzleNet = function () {
+			$scope.puzzle_lv -= 1;
+			console.log($scope.puzzle_lv);
+			clearPuzzle(puzzle_net, puzzle_block);
+			puzzle_net.splice(0, puzzle_net.length);
+			addPuzzleNet($scope.puzzle_lv);
+		}
+		
+		$scope.addPuzzleNet = function () {
+			$scope.puzzle_lv += 1;
+			clearPuzzle(puzzle_net, puzzle_block);
+			puzzle_net.splice(0, puzzle_net.length);
+			addPuzzleNet($scope.puzzle_lv);
+		}
+		
+		function addPuzzleNet (level) {
+			canvas.isDrawingMode = false;
+			// each block size of canvas
+			var bWidth = canvas.getWidth() / level;
+			var bHeight = canvas.getHeight() / level;
+			var mid_count = (2*level - 2)/2;
+			for (var index = 1; index <= 2 * level - 2; index++) {
+				if (index - mid_count <= 0)  {
+					puzzle_net.push(makeLine([0 , bHeight * index, canvas.getWidth(), bHeight * index]));
+				} else {
+				  puzzle_net.push(makeLine([bWidth * (index - mid_count) , 0, bWidth * (index - mid_count), canvas.getHeight()]));
+				}
+			}
+			drawPuzzle(puzzle_net);
+		}
+		
+		function drawPuzzle (puzzle) {
+			puzzle.forEach(function(element) {
+				canvas.add(element);
+			}, this);
+			canvas.renderAll();
+		}
+		
+		function clearPuzzle (puzzleNet, puzzleBlock) {
+			puzzleNet.forEach(function(element) {
+				canvas.remove(element);
+			}, this);
+			puzzleBlock.forEach(function(element) {
+				canvas.remove(element);
+			}, this);
+			canvas.renderAll();
+		}
+		
+		function clearPuzzleNet (puzzleNet) {
+			puzzleNet.forEach(function(element) {
+				canvas.remove(element);
+			}, this);
+			canvas.renderAll();
+		}
+		
+		function makeLine (coords) {
+			return new fabric.Line(coords, {
+				stroke: 'white',
+				strokeWidth: 1,
+				selectable: false
 			});
-			angular.element('#imageModal').modal('hide');
 		}
 		
-		$scope.saveCanvas = function () {
-			var imgBase64 = canvas.toDataURL().replace(/^data:image\/png;base64,/,'');
-			UploadCombineService.save({
-				username: LoggedIn.name,
-				photo_id: $scope.userImg._id,
-				category: 'image'
-			}, {data: imgBase64});
-			angular.element('#combineAlert').show();
+		function drawWhiteRect (x, y, level) {
+			var bWidth = canvas.getWidth() / level;
+			var bHeight = canvas.getHeight() / level;
+			var indexX = Math.floor(x/bWidth);
+			var indexY = Math.floor(y/bHeight);
+			var block = addRect(bWidth * indexX, bHeight * indexY, bWidth, bHeight);
+			puzzle_block.push(block);
+			canvas.add(block);
+		}
+		
+		function addRect (left, top, width, height) {
+			var rect = new  fabric.Rect({
+				left: left,
+				top: top,
+				fill: 'white',
+				borderColor: 'white',
+				width: width,
+				height: height,
+				selectable: false
+			});
+			return rect;
+		}
+		
+		/**
+		 * cuting funcations
+		 */
+		$scope.addRectCut = function () {
+			$scope.cut_area = 1;
+			ca = new fabric.Rect({
+				fill: 'rgba(0,0,0,0.3)',
+				originX: 'left',
+				originY: 'top',
+				stroke: 'red',
+				strokeDashArray: [2, 2],
+				opacity: 1,
+				width: 400,
+				height: 400,
+				borderColor: '#36fd00',
+				cornerColor: 'green',
+				hasRotatingPoint: false
+			});
+			canvas.add(ca);	
+		}
+		
+		$scope.addCircleCut = function () {
+			$scope.cut_area = 2;
+			ca = new fabric.Circle({
+				fill: 'rgba(0,0,0,0.3)',
+				originX: 'left',
+				originY: 'top',
+				stroke: 'red',
+				strokeDashArray: [2, 2],
+				opacity: 1,
+				radius: 100,
+				borderColor: '#36fd00',
+				cornerColor: 'green'
+			});
+			canvas.add(ca);	
+		}
+		
+		$scope.cutImg = function () {
+			if ($scope.cut_area === 1) {
+				ca = canvas.getActiveObject();
+				cLeft = ca.get('left');
+				cTop = ca.get('top');
+				cWidth = ca.get('width') * ca.get('scaleX');
+				cHeight = ca.get('height') * ca.get('scaleY');
+				oWidth = cutObject.get('width');
+				oHeight = cutObject.get('height');
+				cutObject.clipTo = function (ctx) {
+					ctx.rect((cLeft*2 - oWidth/2), (cTop*2 - oHeight/2), cWidth*2, cHeight*2);
+				}
+			} else if ($scope.cut_area === 2) {
+				console.log(cutObject);
+				ca = canvas.getActiveObject();
+				console.log(ca);
+				cLeft = ca.get('left');
+				cTop = ca.get('top');
+				cRadius = ca.get('radius') * ca.get('scaleX')*2;
+				oWidth = cutObject.get('width');
+				oHeight = cutObject.get('height');
+				cutObject.clipTo = function (ctx) {
+					ctx.arc((cLeft*2 - oWidth/2) + cRadius, (cTop*2 - oHeight/2) + cRadius, cRadius, 0, 2 * Math.PI);
+				}
+			}
+			canvas.remove(ca);
+			canvas.renderAll();
+		}
+		
+		$scope.saveImg = function () {
+			var imgBase64;
+			if ($scope.modalModel === 0) {
+				if ($scope.combineCate === 1) {
+					clearPuzzleNet(puzzle_net);
+					imgBase64 = canvas.toDataURL().replace(/^data:image\/png;base64,/,'');
+					CombineService.save({
+						username: LoggedIn.name,
+						name: makeFileName(),
+						category: 'source',
+						to_user: LoggedIn.name,
+						path: '/uploads/combineSource/'
+					}, {data: imgBase64});
+				} else if($scope.combineCate === 2) {
+					imgBase64 = canvas.toDataURL().replace(/^data:image\/png;base64,/,'');
+					CombineService.save({
+						username: LoggedIn.name,
+						name: makeFileName(),
+						category: 'source',
+						to_user: LoggedIn.name,
+						path: '/uploads/combineSource/'
+					}, {data: imgBase64});
+				}
+				angular.element('#sourceAlert').show();
+				$scope.combineCate = 0;
+			} else if ($scope.modalModel === 2) {
+				imgBase64 = canvas.toDataURL().replace(/^data:image\/png;base64,/,'');
+				CombineService.save({
+					username: LoggedIn.name,
+					name: makeFileName(),
+					category: 'image',
+					to_user: LoggedIn.name,
+					path: '/uploads/combineImgs/'
+				}, {data: imgBase64});
+				angular.element('#saveAlert').show();
+			}
 		}
 		
 		$scope.goBack = function () {
